@@ -105,7 +105,7 @@ export function Component() {
             key={widgetId}
             widgetConfig={widget}
             widgetName={widget?.title ?? "Custom Chart"}
-            className="col-span-2"
+            className="md:col-span-2"
             onToggleMinimize={() => toggleMinimize(widgetId)}
             onRemove={() => removeWidget(widgetId)}
           >
@@ -118,7 +118,7 @@ export function Component() {
             key={widgetId}
             widgetConfig={widget}
             widgetName={widget?.title ?? "Events Chart"}
-            className="col-span-2"
+            className="md:col-span-2"
             onToggleMinimize={() => toggleMinimize(widgetId)}
           >
             <MainChartWidget {...props} />
