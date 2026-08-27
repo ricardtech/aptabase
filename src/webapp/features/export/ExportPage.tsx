@@ -13,11 +13,11 @@ export function Component() {
   if (!app) return <Navigate to="/" />;
 
   return (
-    <Page title="Export">
+    <Page title="Exportar Dados">
       {buildMode === "debug" && <DebugModeBanner />}
 
       <div className="flex justify-between items-center">
-        <PageHeading title="Export" subtitle="Freedom to explore your data" />
+        <PageHeading title="Exportar Dados" subtitle="Freedom to explore your data" />
         <div className="flex items-center">
           <BuildModeSelector />
         </div>

@@ -78,7 +78,7 @@ function Body(props: { billing: BillingInfo; historical: BillingHistoricalUsage[
       </div>
 
       <div className="mt-12">
-        <PageHeading title="Danger Zone" subtitle="Be careful with these actions" />
+        <PageHeading title="Zona de Perigo" subtitle="Be careful with these actions" />
         <div className="border-[0.5px] border-destructive rounded-md mt-4">
           <DangerZoneItem
             title="Delete Account"

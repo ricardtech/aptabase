@@ -43,10 +43,10 @@ export function Component() {
   };
 
   return (
-    <Page title="Live View">
+    <Page title="Visualização ao Vivo">
       {buildMode === "debug" && <DebugModeBanner />}
       <div className="flex justify-between items-center">
-        <PageHeading title="Live View" aside={aside()} subtitle={subtitle()} />
+        <PageHeading title="Visualização ao Vivo" aside={aside()} subtitle={subtitle()} />
         <div className="flex items-center">
           <BuildModeSelector />
         </div>

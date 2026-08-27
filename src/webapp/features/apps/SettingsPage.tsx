@@ -15,7 +15,7 @@ export function Component() {
 
   return (
     <Page title={`${app.name} - Settings`}>
-      <PageHeading title="Settings" subtitle="Manage your app settings" />
+      <PageHeading title="Configurações" subtitle="Manage your app settings" />
 
       <Tabs defaultValue="general" className="mt-8">
         <TabsList>

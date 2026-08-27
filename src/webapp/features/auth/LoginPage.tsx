@@ -19,23 +19,23 @@ type StatusMessageProps = {
 
 const SignUpMessage = () => (
   <span className="block">
-    Don't have an account?{" "}
+    Não tem uma conta?{" "}
     <Link className="font-semibold text-foreground" to="/auth/register">
       Sign up
     </Link>{" "}
-    for free.
+    gratuitamente.
   </span>
 );
 
 const StatusMessage = (props: StatusMessageProps) => {
   if (props.status === "success") {
-    return <span className="text-success">Woo-hoo! Email sent, go check your inbox!</span>;
+    return <span className="text-success">Tudo pronto! Link enviado, verifique sua caixa de entrada!</span>;
   }
 
   if (props.status === "notfound") {
     return (
       <>
-        <span className="text-destructive">Could not find an account with that email.</span>
+        <span className="text-destructive">Não foi possível encontrar uma conta com esse e-mail.</span>
         <SignUpMessage />
       </>
     );
@@ -84,7 +84,7 @@ export function Component() {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <Logo className="mx-auto h-12 w-auto text-primary" />
-        <h2 className="text-center text-3xl text-foreground font-bold">Sign in to your account</h2>
+        <h2 className="text-center text-3xl text-foreground font-bold">Entrar na sua conta</h2>
         <DataResidency />
       </div>
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -118,7 +118,7 @@ export function Component() {
               required={true}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <Button loading={status === "loading"}>Send magic link</Button>
+            <Button loading={status === "loading"}>Enviar link de acesso</Button>
             <p className="text-center text-sm h-10 text-muted-foreground">
               <StatusMessage status={status} />
             </p>

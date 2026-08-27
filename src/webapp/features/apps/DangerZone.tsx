@@ -23,10 +23,10 @@ export function DangerZone(props: Props) {
   return (
     <form onSubmit={handleSubmit} className="border bg-card rounded p-4 max-w-md">
       <h2 className="text-lg">Delete {props.app.name}?</h2>
-      <div className="text-sm text-muted-foreground">This will permanently delete the app and its data.</div>
+      <div className="text-sm text-muted-foreground">Isso excluirá permanentemente o aplicativo e todos os seus dados.</div>
       <div className="mt-4">
         <div className="w-20">
-          <Button variant="destructive">Delete</Button>
+          <Button variant="destructive">Excluir</Button>
         </div>
       </div>
     </form>

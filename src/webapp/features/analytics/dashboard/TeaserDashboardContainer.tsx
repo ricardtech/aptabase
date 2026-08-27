@@ -21,7 +21,7 @@ export function TeaserDashboardContainer(props: Props) {
     <Page title={props.app.name}>
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <PageHeading title="Dashboard" />
+          <PageHeading title="Painel" />
         </div>
         <div className="relative bg-background pt-2">
           <div className="absolute top-0 left-0 h-full w-full backdrop-blur-[6px] z-20 flex justify-center items-start lg:items-center">

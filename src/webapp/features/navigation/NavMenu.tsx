@@ -21,18 +21,18 @@ export function NavMenu(props: { onNavigation?: VoidFunction }) {
     <div className="flex flex-col h-full justify-between">
       <div className="space-y-6">
         <NavCategory>
-          <NavItem label="Home" href="/" icon={IconLayoutGrid} onNavigation={props.onNavigation} />
+          <NavItem label="Início" href="/" icon={IconLayoutGrid} onNavigation={props.onNavigation} />
         </NavCategory>
-        <NavCategory title="Application">
+        <NavCategory title="Aplicativo">
           <NavItem
-            label="Dashboard"
+            label="Painel"
             disabled={!currentApp}
             href={`/${currentApp?.id}/`}
             icon={IconGraph}
             onNavigation={props.onNavigation}
           />
           <NavItem
-            label="Live View"
+            label="Visualização ao Vivo"
             disabled={!currentApp || !!currentApp.lockReason}
             href={`/${currentApp?.id}/live`}
             icon={IconActivityHeartbeat}
@@ -46,28 +46,28 @@ export function NavMenu(props: { onNavigation?: VoidFunction }) {
             onNavigation={props.onNavigation}
           />
           <NavItem
-            label="Errors"
+            label="Erros e Falhas"
             disabled={!currentApp || !!currentApp.lockReason}
             href={`/${currentApp?.id}/errors`}
             icon={IconAlertTriangle}
             onNavigation={props.onNavigation}
           />
           <NavItem
-            label="Export"
+            label="Exportar"
             disabled={!currentApp || !!currentApp.lockReason}
             href={`/${currentApp?.id}/export`}
             icon={IconCloudDownload}
             onNavigation={props.onNavigation}
           />
           <NavItem
-            label="Instructions"
+            label="Instruções"
             disabled={!currentApp}
             href={`/${currentApp?.id}/instructions`}
             icon={IconCode}
             onNavigation={props.onNavigation}
           />
           <NavItem
-            label="Settings"
+            label="Configurações"
             disabled={!currentApp || !currentApp.hasOwnership}
             disabledReason={
               currentApp && !currentApp.hasOwnership ? "Settings are available only to application owners" : undefined

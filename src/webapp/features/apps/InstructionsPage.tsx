@@ -44,11 +44,11 @@ export function Component() {
 
   return (
     <Page title={`${app.name} - Instructions`}>
-      <PageHeading title="Instructions" subtitle="Instrument your app with our SDK" />
+      <PageHeading title="Instruções do SDK" subtitle="Integre seu aplicativo com o nosso SDK" />
       <div className="flex flex-col space-y-8 mt-8">
         <div className="px-4 py-2 bg-muted max-w-fit rounded">
           <p className="text-muted-foreground text-sm mb-1">
-            App Key for <span className="text-foreground">{app.name}</span>
+            Chave de aplicativo para <span className="text-foreground">{app.name}</span>
           </p>
           <div className="flex items-center mb-2 gap-2 min-w-64">
             <span className="font-medium text-xl">{app.appKey}</span>
@@ -61,7 +61,7 @@ export function Component() {
                 navigator.clipboard.writeText(app.appKey);
               }}
             />
-            {justCopied && <span className="text-xs">Copied!</span>}
+            {justCopied && <span className="text-xs">Copiado!</span>}
           </div>
           <p className="text-muted-foreground text-sm mt-2">It is used by the SDK to identify your app</p>
         </div>

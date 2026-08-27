@@ -19,16 +19,16 @@ type StatusMessageProps = {
 
 const StatusMessage = (props: StatusMessageProps) => {
   if (props.status === "success") {
-    return <span className="text-success">Woo-hoo! Email sent, go check your inbox!</span>;
+    return <span className="text-success">Tudo pronto! Link enviado, verifique sua caixa de entrada!</span>;
   }
 
   return (
     <>
-      Already registered?{" "}
+      Já tem cadastro?{" "}
       <Link className="font-medium text-foreground" to="/auth">
         Sign in
       </Link>{" "}
-      to your account.
+      na sua conta.
     </>
   );
 };
@@ -55,7 +55,7 @@ export function Component() {
     <Page title="Sign up">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Logo className="mx-auto h-12 w-auto text-primary" />
-        <h2 className="text-center text-3xl font-bold">Sign up for an account</h2>
+        <h2 className="text-center text-3xl font-bold">Criar uma nova conta</h2>
         <DataResidency />
       </div>
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -79,7 +79,7 @@ export function Component() {
 
           <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
             <TextInput
-              label="Name"
+              label="Nome"
               name="name"
               placeholder="Peter Parker"
               value={name}
@@ -87,7 +87,7 @@ export function Component() {
               onChange={(e) => setName(e.target.value)}
             />
             <TextInput
-              label="Email Address"
+              label="Endereço de E-mail"
               name="email"
               type="email"
               placeholder="peter.parker@corp.com"
@@ -96,7 +96,7 @@ export function Component() {
               required={true}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <Button loading={status === "loading"}>Send magic link</Button>
+            <Button loading={status === "loading"}>Enviar link de acesso</Button>
             <p className="text-center text-sm h-10 text-muted-foreground">
               <StatusMessage status={status} />
             </p>

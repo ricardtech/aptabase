@@ -14,7 +14,7 @@ export function Component() {
     <Page title="Error Logs">
       <div className="flex justify-between items-center">
         <PageHeading
-          title="Errors"
+          title="Erros e Falhas"
           subtitle="Track and debug crashes and errors in your app"
         />
       </div>

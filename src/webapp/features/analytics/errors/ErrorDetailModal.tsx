@@ -170,12 +170,12 @@ export function ErrorDetailModal({ appId, errorId, open, onClose }: ErrorDetailM
                       {justCopied ? (
                         <>
                           <IconCheck className="h-4 w-4" />
-                          <span>Copied!</span>
+                          <span>Copiado!</span>
                         </>
                       ) : (
                         <>
                           <IconCopy className="h-4 w-4" />
-                          <span>Copy</span>
+                          <span>Copiar</span>
                         </>
                       )}
                     </button>

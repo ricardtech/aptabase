@@ -16,7 +16,7 @@ export function LegalNotice(props: Props) {
         target="_blank"
         className="text-primary hover:underline"
       >
-        Terms of Service
+        Termos de Serviço
       </a>{" "}
       and{" "}
       <a
@@ -24,7 +24,7 @@ export function LegalNotice(props: Props) {
         target="_blank"
         className="text-primary hover:underline"
       >
-        Privacy Policy
+        Política de Privacidade
       </a>
       .
     </p>

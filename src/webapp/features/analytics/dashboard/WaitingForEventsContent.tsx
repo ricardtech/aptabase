@@ -16,12 +16,12 @@ export function WaitingForEventsContent(props: Props) {
 
   return (
     <>
-      <p className="text-center font-semibold">Waiting for the first event...</p>
+      <p className="text-center font-semibold">Aguardando o primeiro evento...</p>
 
       {app && (
         <div className="text-center">
           <p className="text-muted-foreground text-sm mb-1">
-            App Key for <span className="text-foreground">{app.name}</span>
+            Chave de aplicativo para <span className="text-foreground">{app.name}</span>
           </p>
           <div className="flex items-center mb-2 gap-2">
             <span className="font-medium text-xl">{app.appKey}</span>

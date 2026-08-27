@@ -27,17 +27,17 @@ export function GeneralSettings(props: Props) {
       <AppIconUpload iconPath={props.app.iconPath} onIconChanged={setIcon} />
 
       <TextInput
-        label="Name"
+        label="Nome"
         name="name"
         required={true}
         value={name}
         maxLength={40}
         onChange={(e) => setName(e.target.value)}
-        description="A friendly name to identify your app. You can change at any time."
+        description="Um nome amigável para identificar seu app. Você pode alterar a qualquer momento."
       />
 
       <div className="w-20">
-        <Button disabled={name.length < 2}>Save</Button>
+        <Button disabled={name.length < 2}>Salvar</Button>
       </div>
     </form>
   );

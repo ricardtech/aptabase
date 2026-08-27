@@ -204,7 +204,7 @@ export function Component() {
       {buildMode === "debug" && <DebugModeBanner />}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <PageHeading title="Dashboard" aside={aside()} onClick={resetFilters} />
+          <PageHeading title="Painel" aside={aside()} onClick={resetFilters} />
           <div className="flex items-end space-x-2">
             <BuildModeSelector />
             <DateFilterContainer />

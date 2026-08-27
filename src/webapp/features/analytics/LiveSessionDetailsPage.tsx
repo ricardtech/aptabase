@@ -44,7 +44,7 @@ export function Component() {
   };
 
   return (
-    <Page title="Live View">
+    <Page title="Visualização ao Vivo">
       <div className="flex flex-row justify-between items-center">
         <PageHeading title="Session Timeline" subtitle={sessionId} />
         <Button className="mb-5" variant="ghost" onClick={handleBack}>

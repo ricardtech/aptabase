@@ -174,7 +174,7 @@ function NumericKeySelector(props: {
 
   return (
     <select className="form-select compact min-w-[6rem]" onChange={onChangeValue}>
-      <option value={[]}>Events</option>
+      <option value={[]}>Eventos</option>
       {props.numericKeys.map((key) => (
         <Fragment key={key}>
           <option disabled>---</option>

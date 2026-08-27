@@ -1,85 +1,122 @@
 <div align="center">
-  <a href="https://github.com/aptabase/aptabase">
+  <a href="https://github.com/ricardtech/aptabase">
     <img src="https://aptabase.com/og.png" alt="Aptabase"/>
   </a>
 
-  <h3 align="center">Aptabase</h3>
+  <h3 align="center">Aptabase (Tradução PT-BR - Ricard Tech)</h3>
 
   <p align="center">
-    Analytics for Apps.
+    Telemetria e Analytics para Aplicativos e Websites.
     <br />
-    Open Source. Privacy-First. Simple.
+    Código Aberto. Focado em Privacidade. Leve e Simples.
     <br />
     <br />
-    <a href="https://aptabase.com"><strong>Learn more »</strong></a>
+    <a href="https://github.com/ricardtech/aptabase"><strong>Repositório Ricard Tech »</strong></a>
   </p>
 </div>
 
-# About the Project
+# Sobre o Projeto
 
-[Aptabase](https://aptabase.com) is an open-source alternative to Firebase/Google Analytics, specifically built for Mobile, Desktop and Web apps.
+O [Aptabase](https://github.com/ricardtech/aptabase) é uma alternativa open-source moderna ao Firebase Analytics e Google Analytics, especialmente desenvolvida para aplicativos Mobile (Android, iOS), Desktop e Web Apps.
 
-📱 **Extensive list of SDK**: No matter what framework or language you use, we have an SDK for you. Swift, React Native, Flutter, Electron, Kotlin, and many others.
+📱 **Ampla lista de SDKs**: Compatível com as principais linguagens e frameworks do mercado: Kotlin/Android, Flutter, React Native, Swift, Electron, Tauri, Web (JavaScript/TypeScript), .NET MAUI e Unity.
 
-😇 **Privacy-First**: We prioritize user privacy and collect minimal usage data without using unique identifiers. Instead, we focus on monitoring sessions, complying fully with GDPR, CCPA, and PECR regulations.
+😇 **Privacidade em Primeiro Lugar**: Coleta o mínimo necessário de dados de uso sem rastreadores invasivos ou identificadores pessoais, em total conformidade com a LGPD e GDPR.
 
-🚀 **Simple**: Built-in and user-friendly dashboard for all your essential metrics, enabling you to gain insights effortlessly and grasp the dynamics of your apps.
+🚀 **Simples e Leve**: Dashboard integrado, intuitivo e moderno com métricas essenciais em tempo real (usuários ativos, sessões, eventos personalizados, versões e erros).
 
-💯 **Open-Source**: Our source code is 100% open source. There is nothing hidden. All the server code and SDKs are available for you to inspect and contribute to.
+💯 **Código Aberto**: 100% open-source com backend em .NET (ASP.NET Core), frontend em React/TypeScript e banco de dados ultrarrápido com PostgreSQL e ClickHouse.
 
-> [!TIP]
-> Like what you see? Don't forget to give us a ⭐️ on GitHub!
+---
 
-# How to get started?
+## 🚀 Como Executar com Docker Compose (Self-Hosted)
 
-## ☁️ Managed Cloud
+Crie um arquivo `docker-compose.yml` e execute em seu servidor:
 
-The easiest and quickest way to get started. A fully managed service by the creators of Aptabase to help you get started in minutes. Forget about managing software updates and patches; we do it all for you!
+```yaml
+services:
+  aptabase_db:
+    image: postgres:18-alpine
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - aptabase-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-[Try free now →](https://aptabase.com)
+  aptabase_events_db:
+    image: clickhouse/clickhouse-server:23.8.16.16-alpine
+    restart: always
+    volumes:
+      - events-db-data:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+    networks:
+      - aptabase-net
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client --user ${CLICKHOUSE_USER} --password ${CLICKHOUSE_PASSWORD} --query 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-## 🏢 Self-Hosted
+  aptabase:
+    image: alaxricard/aptabase:1.0.0
+    restart: always
+    ports:
+      - "127.0.0.1:8190:8080"
+    environment:
+      BASE_URL: https://${APTABASE_HOST}
+      AUTH_SECRET: ${AUTH_SECRET}
+      DATABASE_URL: Server=aptabase_db;Port=5432;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Database=${POSTGRES_DB}
+      CLICKHOUSE_URL: Host=aptabase_events_db;Port=8123;Username=${CLICKHOUSE_USER};Password=${CLICKHOUSE_PASSWORD}
+    networks:
+      - aptabase-net
+    depends_on:
+      aptabase_db:
+        condition: service_healthy
+      aptabase_events_db:
+        condition: service_healthy
 
-You can also host Aptabase on your servers. It's free, but you are responsible for maintenance and updates.
+networks:
+  aptabase-net:
+    driver: bridge
 
-[Learn how →](https://github.com/aptabase/self-hosting).
+volumes:
+  db-data:
+    driver: local
+  events-db-data:
+    driver: local
+```
 
-## 🛠️ Contributing
+---
 
-We welcome contributions from everyone! If you want to contribute to Aptabase, please read the guide below to get started.
+## 📦 SDKs Disponíveis
 
-[Contributing →](./CONTRIBUTING.md).
-
-# SDKs
-
-We provide SDKs for the most popular frameworks and languages to make it easier to integrate them into your app.
-
-- [Swift (Apple)](https://github.com/aptabase/aptabase-swift)
-- [Android (Kotlin)](https://github.com/aptabase/aptabase-kotlin)
-- [React Native](https://github.com/aptabase/aptabase-react-native)
+- [Android (Kotlin / Java)](https://github.com/aptabase/aptabase-kotlin)
 - [Flutter](https://github.com/aptabase/aptabase_flutter)
+- [React Native](https://github.com/aptabase/aptabase-react-native)
+- [Web Apps (JavaScript / TypeScript / React / Next.js)](https://github.com/aptabase/aptabase-js)
+- [Swift (iOS / macOS)](https://github.com/aptabase/aptabase-swift)
 - [Tauri](https://github.com/aptabase/tauri-plugin-aptabase)
-- [NativeScript](https://github.com/nstudio/nativescript-plugins/tree/main/packages/nativescript-aptabase)
-- [.NET MAUI](https://github.com/aptabase/aptabase-maui)
 - [Electron](https://github.com/aptabase/aptabase-electron)
-- [Web Apps](https://github.com/aptabase/aptabase-js)
-- [Unreal Engine](https://github.com/aptabase/aptabase-unreal)
+- [.NET MAUI](https://github.com/aptabase/aptabase-maui)
 - [Unity Engine](https://github.com/aptabase/aptabase-unity)
 
-🛠️ Don't see the SDK for your platform? You can build your own! Check out our guide on [how to build your own SDK](https://github.com/aptabase/aptabase/wiki/How-to-build-your-own-SDK).
+---
 
-# Need help?
+## 📄 Licença
 
-- Find us on [Discord](https://discord.gg/d9d97unCUk) or [Twitter](https://twitter.com/aptabase)
-- Open a GitHub issue or a discussion on this repo
-- Shoot us an email [hi@aptabase.com](mailto:hi@aptabase.com)
-
-# Credits
-
-Aptabase is highly inspired by [Plausible](https://github.com/plausible/analytics). If you're looking for privacy-friendly website analytics, go check them out. They're awesome! ❤️
-
-# License
-
-Aptabase is open-source under the [AGPLv3 license](./LICENSE). You can use it for free, but you must share any changes you make to the code.
-
-The SDKs are open-source under the MIT license. Use it on your apps without any restrictions.
+O Aptabase é disponibilizado sob a licença [AGPLv3](./LICENSE). Os SDKs clientes utilizam a licença MIT.
