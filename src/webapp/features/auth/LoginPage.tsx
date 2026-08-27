@@ -1,7 +1,7 @@
-import { requestSignInLink, useOAuthProviders } from "@features/auth";
+import { signInWithPassword, useOAuthProviders } from "@features/auth";
 import { Page } from "@components/Page";
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { DataResidency } from "./DataResidency";
 import { LegalNotice } from "./LegalNotice";
 import { RegionSwitch } from "./RegionSwitch";
@@ -11,39 +11,6 @@ import { Logo } from "./Logo";
 import { Button } from "@components/Button";
 import { TextInput } from "@components/TextInput";
 
-type FormStatus = "idle" | "loading" | "success" | "notfound";
-
-type StatusMessageProps = {
-  status: FormStatus;
-};
-
-const SignUpMessage = () => (
-  <span className="block">
-    Não tem uma conta?{" "}
-    <Link className="font-semibold text-foreground" to="/auth/register">
-      Sign up
-    </Link>{" "}
-    gratuitamente.
-  </span>
-);
-
-const StatusMessage = (props: StatusMessageProps) => {
-  if (props.status === "success") {
-    return <span className="text-success">Tudo pronto! Link enviado, verifique sua caixa de entrada!</span>;
-  }
-
-  if (props.status === "notfound") {
-    return (
-      <>
-        <span className="text-destructive">Não foi possível encontrar uma conta com esse e-mail.</span>
-        <SignUpMessage />
-      </>
-    );
-  }
-
-  return <SignUpMessage />;
-};
-
 const RedirectErrorMessage = () => {
   const [params] = useSearchParams();
 
@@ -51,11 +18,11 @@ const RedirectErrorMessage = () => {
   if (!error) {
     return null;
   }
-  const message = error === "expired" ? "This link has expired." : "This link is invalid.";
+  const message = error === "expired" ? "Este link expirou." : "Este link é inválido.";
 
   return (
     <p className="mx-auto text-center mb-10 text-destructive text-sm">
-      {message} Please request a new one.
+      {message} Por favor, tente novamente.
     </p>
   );
 };
@@ -63,21 +30,30 @@ const RedirectErrorMessage = () => {
 Component.displayName = "LoginPage";
 export function Component() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<FormStatus>("idle");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const providers = useOAuthProviders();
   const showOAuth = providers.github || providers.google;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setStatus("loading");
+    setLoading(true);
+    setErrorMessage(null);
 
-    const found = await requestSignInLink(email);
-    setStatus(found ? "success" : "notfound");
+    const result = await signInWithPassword(email, password);
+    if (result.success) {
+      navigate("/");
+    } else {
+      setErrorMessage(result.error || "E-mail ou senha incorretos.");
+      setLoading(false);
+    }
   };
 
   return (
-    <Page title="Login">
+    <Page title="Entrar">
       <div className="mx-auto text-center mb-10">
         <RedirectErrorMessage />
       </div>
@@ -88,7 +64,7 @@ export function Component() {
         <DataResidency />
       </div>
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="py-8 px-4 sm:rounded-lg sm:px-10">
+        <div className="py-8 px-4 sm:rounded-lg sm:px-10 bg-card border rounded">
           {showOAuth && (
             <>
               <div className="space-y-2">
@@ -101,7 +77,7 @@ export function Component() {
                   <div className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-muted">OR</span>
+                  <span className="px-2 bg-muted">OU</span>
                 </div>
               </div>
             </>
@@ -109,18 +85,39 @@ export function Component() {
 
           <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
             <TextInput
-              label="Enter your email address"
+              label="Endereço de E-mail"
               name="email"
               type="email"
-              placeholder="peter.parker@corp.com"
+              placeholder="seuemail@exemplo.com"
               autoComplete="email"
               value={email}
               required={true}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <Button loading={status === "loading"}>Enviar link de acesso</Button>
-            <p className="text-center text-sm h-10 text-muted-foreground">
-              <StatusMessage status={status} />
+            <TextInput
+              label="Senha"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              value={password}
+              required={true}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            
+            {errorMessage && (
+              <p className="text-center text-sm text-destructive font-medium">
+                {errorMessage}
+              </p>
+            )}
+
+            <Button loading={loading}>Entrar</Button>
+            
+            <p className="text-center text-sm text-muted-foreground pt-2">
+              Não tem uma conta?{" "}
+              <Link className="font-semibold text-foreground hover:underline" to="/auth/register">
+                Cadastrar-se
+              </Link>
             </p>
           </form>
         </div>

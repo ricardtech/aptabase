@@ -11,6 +11,8 @@ public class SignInBodyRequest
 {
     [EmailAddress]
     public string Email { get; set; } = "";
+
+    public string? Password { get; set; }
 }
 
 public class RegisterBodyRequest
@@ -20,6 +22,8 @@ public class RegisterBodyRequest
 
     [EmailAddress]
     public string Email { get; set; } = "";
+
+    public string? Password { get; set; }
 }
 
 [ApiController]
@@ -43,10 +47,24 @@ public class AuthController : Controller
         _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
     }
 
+    [HttpPost("/api/_auth/login")]
     [HttpPost("/api/_auth/signin")]
     public async Task<IActionResult> SignIn([FromBody] SignInBodyRequest body, CancellationToken cancellationToken)
     {
-        var found = await _authService.SendSignInEmailAsync(body.Email.Trim(), cancellationToken);
+        var email = body.Email.Trim();
+
+        // Se informou senha, faz login direto com verificação de credenciais
+        if (!string.IsNullOrWhiteSpace(body.Password))
+        {
+            var user = await _authService.LoginWithPasswordAsync(email, body.Password, cancellationToken);
+            if (user == null)
+                return Unauthorized(new { message = "E-mail ou senha incorretos." });
+
+            return Ok(user);
+        }
+
+        // Fallback: envio de link por email
+        var found = await _authService.SendSignInEmailAsync(email, cancellationToken);
 
         if (!found)
             return NotFound(new { });
@@ -58,7 +76,25 @@ public class AuthController : Controller
     [EnableRateLimiting("SignUp")]
     public async Task<IActionResult> Register([FromBody] RegisterBodyRequest body, CancellationToken cancellationToken)
     {
-        await _authService.SendRegisterEmailAsync(body.Name.Trim(), body.Email.Trim(), cancellationToken);
+        var name = body.Name.Trim();
+        var email = body.Email.Trim();
+
+        // Se informou senha, registra e loga direto
+        if (!string.IsNullOrWhiteSpace(body.Password))
+        {
+            try
+            {
+                var user = await _authService.RegisterWithPasswordAsync(name, email, body.Password, cancellationToken);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // Fallback: envio de link por email
+        await _authService.SendRegisterEmailAsync(name, email, cancellationToken);
         return Ok(new { });
     }
 

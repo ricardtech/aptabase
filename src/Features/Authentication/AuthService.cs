@@ -11,6 +11,8 @@ public interface IAuthService
 {
     Task<bool> SendSignInEmailAsync(string email, CancellationToken cancellationToken);
     Task SendRegisterEmailAsync(string name, string email, CancellationToken cancellationToken);
+    Task<UserAccount?> LoginWithPasswordAsync(string email, string password, CancellationToken cancellationToken);
+    Task<UserAccount> RegisterWithPasswordAsync(string name, string email, string password, CancellationToken cancellationToken);
     Task SignInAsync(UserAccount user);
     Task SignOutAsync();
     Task<UserAccount?> FindUserByIdAsync(string id, CancellationToken cancellationToken);
@@ -44,7 +46,64 @@ public class AuthService : IAuthService
         _env = env ?? throw new ArgumentNullException(nameof(env));
         _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
         _emailClient = emailClient ?? throw new ArgumentNullException(nameof(emailClient));
-        _db = db ?? throw new ArgumentNullException(nameof(db)); ;
+        _db = db ?? throw new ArgumentNullException(nameof(db));
+    }
+
+    public async Task<UserAccount?> LoginWithPasswordAsync(string email, string password, CancellationToken cancellationToken)
+    {
+        var user = await FindUserByEmailAsync(email, cancellationToken);
+        if (user == null)
+            return null;
+
+        // Se o usuário já existe mas ainda não tinha senha configurada (ex: criado anteriormente via magic link),
+        // define a senha informada no primeiro login.
+        if (string.IsNullOrWhiteSpace(user.PasswordHash))
+        {
+            var hash = PasswordHelper.HashPassword(password);
+            var cmd = new CommandDefinition(
+                "UPDATE users SET password_hash = @hash, modified_at = (now() AT TIME ZONE 'UTC') WHERE id = @id",
+                new { hash, id = user.Id },
+                cancellationToken: cancellationToken
+            );
+            await _db.Connection.ExecuteAsync(cmd);
+            user.PasswordHash = hash;
+            await SignInAsync(user);
+            return user;
+        }
+
+        if (PasswordHelper.VerifyPassword(password, user.PasswordHash))
+        {
+            await SignInAsync(user);
+            return user;
+        }
+
+        return null;
+    }
+
+    public async Task<UserAccount> RegisterWithPasswordAsync(string name, string email, string password, CancellationToken cancellationToken)
+    {
+        var existing = await FindUserByEmailAsync(email, cancellationToken);
+        if (existing != null)
+        {
+            var loggedIn = await LoginWithPasswordAsync(email, password, cancellationToken);
+            if (loggedIn != null)
+                return loggedIn;
+            throw new InvalidOperationException("Uma conta com esse e-mail já existe.");
+        }
+
+        var userId = NanoId.New();
+        var passwordHash = PasswordHelper.HashPassword(password);
+        var cmd = new CommandDefinition(
+            "INSERT INTO users (id, name, email, password_hash, free_quota) VALUES (@userId, @name, @email, @passwordHash, 20000)",
+            new { userId, name, email = email.ToLower(), passwordHash },
+            cancellationToken: cancellationToken
+        );
+
+        await _db.Connection.ExecuteAsync(cmd);
+
+        var user = new UserAccount(new UserIdentity(userId, name, email)) { PasswordHash = passwordHash };
+        await SignInAsync(user);
+        return user;
     }
 
     public async Task<bool> SendSignInEmailAsync(string email, CancellationToken cancellationToken)
@@ -145,9 +204,6 @@ public class AuthService : IAuthService
             DELETE FROM public.app_salts 
             WHERE app_id IN (SELECT id FROM public.apps WHERE owner_id = @userId);
 
-            DELETE FROM public.apps 
-            WHERE owner_id = @userId;
-
             DELETE FROM public.user_providers 
             WHERE user_id = @userId;
 
@@ -169,13 +225,13 @@ public class AuthService : IAuthService
 
     public async Task<UserAccount?> FindUserByIdAsync(string id, CancellationToken cancellationToken)
     {
-        var cmd = new CommandDefinition($"SELECT id, name, email, lock_reason FROM users WHERE id = @id", new { id }, cancellationToken: cancellationToken);
+        var cmd = new CommandDefinition($"SELECT id, name, email, lock_reason, password_hash AS PasswordHash FROM users WHERE id = @id", new { id }, cancellationToken: cancellationToken);
         return await _db.Connection.QuerySingleOrDefaultAsync<UserAccount>(cmd);
     }
 
     public async Task<UserAccount?> FindUserByEmailAsync(string email, CancellationToken cancellationToken)
     {
-        var cmd = new CommandDefinition($"SELECT id, name, email, lock_reason FROM users WHERE email = @email", new { email = email.ToLower() }, cancellationToken: cancellationToken);
+        var cmd = new CommandDefinition($"SELECT id, name, email, lock_reason, password_hash AS PasswordHash FROM users WHERE email = @email", new { email = email.ToLower() }, cancellationToken: cancellationToken);
         return await _db.Connection.QuerySingleOrDefaultAsync<UserAccount>(cmd);
     }
 
@@ -200,7 +256,7 @@ public class AuthService : IAuthService
     public async Task<UserAccount?> FindUserByOAuthProviderAsync(string providerName, string providerUid, CancellationToken cancellationToken)
     {
         var cmd = new CommandDefinition($@"
-            SELECT u.id, u.name, u.email, u.lock_reason
+            SELECT u.id, u.name, u.email, u.lock_reason, u.password_hash AS PasswordHash
             FROM user_providers up
             INNER JOIN users u
             ON u.id = up.user_id

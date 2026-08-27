@@ -17,21 +17,58 @@ export async function getOAuthProviders(): Promise<OAuthProviders> {
   return await api.get<OAuthProviders>("/_auth/providers");
 }
 
-export async function requestSignInLink(email: string): Promise<boolean> {
+export async function signInWithPassword(email: string, password?: string): Promise<{ success: boolean; error?: string }> {
   const [status, response] = await api.fetch("POST", "/_auth/signin", {
     email,
+    password,
   });
 
-  if (status === 404) return false;
-  if (status === 200) return true;
+  if (status === 200) {
+    trackEvent("signin");
+    return { success: true };
+  }
+
+  if (status === 401) {
+    const data = await response.json().catch(() => ({}));
+    return { success: false, error: data.message || "E-mail ou senha incorretos." };
+  }
+
+  if (status === 404) {
+    return { success: false, error: "Não foi possível encontrar uma conta com esse e-mail." };
+  }
 
   await api.handleError(status, response);
-  return false;
+  return { success: false, error: "Erro ao realizar autenticação." };
+}
+
+export async function registerWithPassword(name: string, email: string, password?: string): Promise<{ success: boolean; error?: string }> {
+  const [status, response] = await api.fetch("POST", "/_auth/register", {
+    name,
+    email,
+    password,
+  });
+
+  if (status === 200) {
+    trackEvent("register");
+    return { success: true };
+  }
+
+  if (status === 400 || status === 409) {
+    const data = await response.json().catch(() => ({}));
+    return { success: false, error: data.message || "Erro ao registrar usuário." };
+  }
+
+  await api.handleError(status, response);
+  return { success: false, error: "Erro ao registrar conta." };
+}
+
+export async function requestSignInLink(email: string): Promise<boolean> {
+  const res = await signInWithPassword(email);
+  return res.success;
 }
 
 export async function requestRegisterLink(name: string, email: string): Promise<void> {
-  await api.post("/_auth/register", { name, email });
-  trackEvent("register");
+  await registerWithPassword(name, email);
 }
 
 export async function me(): Promise<UserAccount | null> {
