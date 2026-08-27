@@ -1,33 +1,37 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="pt-BR" class="h-full">
   <head>
-    <title>Aptabase</title>
+    <title>Ricard Tech Telemetria</title>
     <meta
       name="description"
-      content="Open Source, Privacy-First and Simple Analytics for Mobile, Desktop and Web apps."
+      content="Telemetria e Analytics em tempo real para aplicativos e websites. Código aberto e focado em privacidade."
     />
     <meta name="robots" content="noindex" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Open-Source Analytics for Apps" />
+    <meta property="og:title" content="Ricard Tech Telemetria" />
     <meta
       property="og:description"
-      content="Open Source, Privacy-First and Simple Analytics for Mobile, Desktop and Web apps."
+      content="Telemetria e Analytics em tempo real para aplicativos e websites."
     />
-    <meta property="og:image" content="https://aptabase.com/og.png" />
-
-    <meta name="twitter:site" content="@aptabase" />
-    <meta name="twitter:title" content="Open-Source Analytics for Apps" />
-    <meta name="twitter:card" content="summary_large_image" />
 
     <meta charset="UTF-8" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#09090b" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Telemetria" />
+
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" href="/favicon-32x32.png" />
     <link rel="stylesheet" href="/webapp/styles/index.css" />
   </head>
-  <body class="h-full">
+  <body class="h-full bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
     <div id="root" class="h-full">
       <div class="w-full h-full flex flex-col items-center justify-center">
         <svg
@@ -45,20 +49,12 @@
     </div>
 
     <script type="module" src="/webapp/main.tsx"></script>
-    <script type="text/javascript">
-      window.$crisp = [];
-      window.$crisp.push(["do", "chat:hide"]);
-      window.CRISP_WEBSITE_ID = "6a643f4e-c28f-44df-91af-8072159892ea";
-
-      document.addEventListener("DOMContentLoaded", function () {
-        setTimeout(() => {
-          d = document;
-          s = d.createElement("script");
-          s.src = "https://client.crisp.chat/l.js";
-          s.async = 1;
-          d.getElementsByTagName("head")[0].appendChild(s);
-        }, 5000);
-      });
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
     </script>
   </body>
 </html>

@@ -26,6 +26,15 @@ public class RegisterBodyRequest
     public string? Password { get; set; }
 }
 
+public class ChangePasswordBodyRequest
+{
+    public string CurrentPassword { get; set; } = "";
+
+    [Required]
+    [MinLength(6)]
+    public string NewPassword { get; set; } = "";
+}
+
 [ApiController]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class AuthController : Controller
@@ -96,6 +105,22 @@ public class AuthController : Controller
         // Fallback: envio de link por email
         await _authService.SendRegisterEmailAsync(name, email, cancellationToken);
         return Ok(new { });
+    }
+
+    [HttpPost("/api/_auth/password/change")]
+    [IsAuthenticated]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordBodyRequest body, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(body.NewPassword) || body.NewPassword.Length < 6)
+            return BadRequest(new { message = "A nova senha deve ter no mínimo 6 caracteres." });
+
+        var identity = this.GetCurrentUserIdentity();
+        var success = await _authService.ChangePasswordAsync(identity.Id, body.CurrentPassword, body.NewPassword, cancellationToken);
+
+        if (!success)
+            return BadRequest(new { message = "Senha atual incorreta." });
+
+        return Ok(new { message = "Senha alterada com sucesso!" });
     }
 
     [HttpGet("/api/_auth/github")]

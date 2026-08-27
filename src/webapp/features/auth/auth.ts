@@ -62,6 +62,20 @@ export async function registerWithPassword(name: string, email: string, password
   return { success: false, error: "Erro ao registrar conta." };
 }
 
+export async function changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
+  const [status, response] = await api.fetch("POST", "/_auth/password/change", {
+    currentPassword,
+    newPassword,
+  });
+
+  if (status === 200) {
+    return { success: true };
+  }
+
+  const data = await response.json().catch(() => ({}));
+  return { success: false, error: data.message || "Senha atual incorreta ou erro ao alterar." };
+}
+
 export async function requestSignInLink(email: string): Promise<boolean> {
   const res = await signInWithPassword(email);
   return res.success;

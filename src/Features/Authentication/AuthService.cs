@@ -13,6 +13,7 @@ public interface IAuthService
     Task SendRegisterEmailAsync(string name, string email, CancellationToken cancellationToken);
     Task<UserAccount?> LoginWithPasswordAsync(string email, string password, CancellationToken cancellationToken);
     Task<UserAccount> RegisterWithPasswordAsync(string name, string email, string password, CancellationToken cancellationToken);
+    Task<bool> ChangePasswordAsync(string userId, string currentPassword, string newPassword, CancellationToken cancellationToken);
     Task SignInAsync(UserAccount user);
     Task SignOutAsync();
     Task<UserAccount?> FindUserByIdAsync(string id, CancellationToken cancellationToken);
@@ -49,13 +50,37 @@ public class AuthService : IAuthService
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
 
+    public async Task<bool> ChangePasswordAsync(string userId, string currentPassword, string newPassword, CancellationToken cancellationToken)
+    {
+        var user = await FindUserByIdAsync(userId, cancellationToken);
+        if (user == null)
+            return false;
+
+        // Se o usuário já possui senha cadastrada, verifica a senha atual
+        if (!string.IsNullOrWhiteSpace(user.PasswordHash))
+        {
+            if (!PasswordHelper.VerifyPassword(currentPassword, user.PasswordHash))
+                return false;
+        }
+
+        var newHash = PasswordHelper.HashPassword(newPassword);
+        var cmd = new CommandDefinition(
+            "UPDATE users SET password_hash = @newHash, modified_at = (now() AT TIME ZONE 'UTC') WHERE id = @userId",
+            new { newHash, userId },
+            cancellationToken: cancellationToken
+        );
+
+        await _db.Connection.ExecuteAsync(cmd);
+        return true;
+    }
+
     public async Task<UserAccount?> LoginWithPasswordAsync(string email, string password, CancellationToken cancellationToken)
     {
         var user = await FindUserByEmailAsync(email, cancellationToken);
         if (user == null)
             return null;
 
-        // Se o usuário já existe mas ainda não tinha senha configurada (ex: criado anteriormente via magic link),
+        // Se o usuário já existe mas ainda não tinha senha configurada,
         // define a senha informada no primeiro login.
         if (string.IsNullOrWhiteSpace(user.PasswordHash))
         {
