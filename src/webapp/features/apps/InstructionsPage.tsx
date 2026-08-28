@@ -12,6 +12,38 @@ import { Navigate } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 import frameworks, { type FrameworkInstructions } from "./frameworks";
 
+function translateSdkInstructions(raw: string): string {
+  if (!raw) return "";
+
+  return raw
+    // Trocar comandos de npm/yarn/pnpm para bun
+    .replace(/npm\s+(?:install|i|add)\s+([@\w\d\-\/]+)/gi, "bun add $1")
+    .replace(/yarn\s+add\s+([@\w\d\-\/]+)/gi, "bun add $1")
+    .replace(/pnpm\s+add\s+([@\w\d\-\/]+)/gi, "bun add $1")
+    .replace(/npx\s+/gi, "bunx ")
+
+    // Títulos e seções
+    .replace(/^#\s+Aptabase SDK for (.*)$/gim, "# SDK do Aptabase para $1")
+    .replace(/^#\s+(.*)SDK for (.*)$/gim, "# SDK do Aptabase para $2")
+    .replace(/^##\s+Installation/gim, "## Instalação")
+    .replace(/^##\s+Install/gim, "## Instalação")
+    .replace(/^##\s+Setup/gim, "## Configuração")
+    .replace(/^##\s+Usage/gim, "## Como Usar")
+    .replace(/^##\s+Initialize the SDK/gim, "## Inicializando o SDK")
+    .replace(/^##\s+Track Events/gim, "## Rastreamento de Eventos")
+    .replace(/^###\s+Initialize the SDK/gim, "### Inicializando o SDK")
+    .replace(/^###\s+Track Events/gim, "### Rastreamento de Eventos")
+
+    // Frases comuns
+    .replace(/Install the SDK using npm or your preferred JavaScript package manager/gi, "Instale o SDK utilizando o **bun** (ou seu gerenciador de pacotes preferido):")
+    .replace(/Install the SDK using npm/gi, "Instale o SDK utilizando o **bun**:")
+    .replace(/A tiny SDK \((.*?)\) to instrument your (.*?) with Aptabase, an Open Source, Privacy-First and Simple Analytics for Mobile, Desktop and Web Apps\./gi, "Um SDK ultraleve ($1) para integrar sua aplicação ($2) com o Aptabase, telemetria segura, em tempo real e focada em privacidade.")
+    .replace(/First, install the package:/gi, "Primeiro, instale o pacote:")
+    .replace(/Add the SDK to your project:/gi, "Adicione o SDK ao seu projeto:")
+    .replace(/Initialize the SDK as early as possible:/gi, "Inicialize o SDK o mais cedo possível na sua aplicação:")
+    .replace(/You can then track events with:/gi, "Você pode então rastrear eventos chamando:");
+}
+
 const fetchInstructions = async (id: string): Promise<[FrameworkInstructions, string]> => {
   const fw = frameworks[id];
   if (!fw) {
@@ -22,7 +54,7 @@ const fetchInstructions = async (id: string): Promise<[FrameworkInstructions, st
 
   const response = await fetch(`${fw.baseURL}/README.md`);
   const content = await response.text();
-  return [fw, content];
+  return [fw, translateSdkInstructions(content)];
 };
 
 Component.displayName = "InstructionsPage";
@@ -46,12 +78,12 @@ export function Component() {
     <Page title={`${app.name} - Instruções`}>
       <PageHeading title="Instruções do SDK" subtitle="Integre seu aplicativo com o nosso SDK" />
       <div className="flex flex-col space-y-8 mt-8">
-        <div className="px-4 py-2 bg-muted max-w-fit rounded">
-          <p className="text-muted-foreground text-sm mb-1">
+        <div className="px-4 py-3 bg-muted max-w-fit rounded border">
+          <p className="text-muted-foreground text-sm mb-1 font-medium">
             Chave de aplicativo para <span className="text-foreground">{app.name}</span>
           </p>
           <div className="flex items-center mb-2 gap-2 min-w-64">
-            <span className="font-medium text-xl">{app.appKey}</span>
+            <span className="font-medium text-xl font-mono">{app.appKey}</span>
             <IconCopy
               className="cursor-pointer hover:text-muted-foreground transition-colors duration-200 ease-in-out"
               stroke={2}
@@ -61,15 +93,15 @@ export function Component() {
                 navigator.clipboard.writeText(app.appKey);
               }}
             />
-            {justCopied && <span className="text-xs">Copiado!</span>}
+            {justCopied && <span className="text-xs text-primary font-semibold">Copiado!</span>}
           </div>
-          <p className="text-muted-foreground text-sm mt-2">É utilizada pelo SDK para identificar o seu aplicativo.</p>
+          <p className="text-muted-foreground text-xs">É utilizada pelo SDK para identificar o seu aplicativo.</p>
         </div>
 
         <div className="flex items-center border-b pb-4 justify-between">
           <div className="flex items-center space-x-4">
             <Select onValueChange={setSelected}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder="Selecione um framework" />
               </SelectTrigger>
               <SelectContent className="max-h-[400px]">
@@ -79,8 +111,8 @@ export function Component() {
                       <div className="flex gap-2 items-center">
                         <img
                           src={fw.icon}
-                          className={twMerge("h-4 w-4", fw.invert ? "dark:invert" : "")}
-                          loading="lazy"
+                          className={twMerge("w-4 h-4", fw.invert && "dark:filter dark:invert")}
+                          alt={fw.name}
                         />
                         <span>{fw.name}</span>
                       </div>
@@ -90,29 +122,24 @@ export function Component() {
               </SelectContent>
             </Select>
           </div>
-          {fw?.repository && (
+          {fw && (
             <a
+              className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1"
               target="_blank"
-              className="hidden md:flex hover:bg-accent text-sm rounded p-2 items-center space-x-1"
-              href={fw?.repository}
+              rel="noreferrer"
+              href={fw.repository}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 fill-current" viewBox="0 0 24 24">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
               </svg>
-              <span>Ver no GitHub</span>
+              Ver no GitHub
             </a>
           )}
         </div>
 
-        {isLoading ? (
-          <LoadingState />
-        ) : isError ? (
-          <ErrorState />
-        ) : (
-          <div>
-            <Markdown baseURL={fw?.baseURL ?? ""} content={(content || "").replace("<YOUR_APP_KEY>", app.appKey)} />
-          </div>
-        )}
+        {isLoading && <LoadingState />}
+        {isError && <ErrorState />}
+        {content && fw && <Markdown content={content} baseURL={fw.baseURL} />}
       </div>
     </Page>
   );

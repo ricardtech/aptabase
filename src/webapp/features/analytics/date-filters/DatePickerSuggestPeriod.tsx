@@ -18,17 +18,17 @@ import {
 } from "../../../atoms/date-atoms";
 
 const startOptionsSuggestions = [
-  "Today",
-  "Yesterday",
-  "2 days ago",
-  "Last week",
-  "Last month",
-  "2 months ago",
-  "This year",
-  "Last year",
+  "Hoje",
+  "Ontem",
+  "2 dias atrás",
+  "Última semana",
+  "Último mês",
+  "2 meses atrás",
+  "Este ano",
+  "Ano passado",
 ];
 
-const endOptionsSuggestions = ["Now"];
+const endOptionsSuggestions = ["Agora"];
 
 type UnappliedDate = {
   end?: DateSuggestion | null;
@@ -131,7 +131,7 @@ export function DatePickerSuggestPeriod() {
             </TooltipTrigger>
             <TooltipContent side="bottom" align="center" className="pt-2">
               <div className="bg-popover text-popover-foreground rounded-md border border-border shadow-md p-2">
-                <span className="text-sm">Back to period selection</span>
+                <span className="text-sm">Voltar à seleção de período</span>
               </div>
             </TooltipContent>
           </Tooltip>

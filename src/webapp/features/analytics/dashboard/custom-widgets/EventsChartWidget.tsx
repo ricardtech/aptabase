@@ -28,6 +28,20 @@ type Props = {
   widgetConfig: SingleWidgetConfig<EventsChartWidgetConfig>;
 };
 
+function formatPointName(name: string, value: number): string {
+  const n = name.toLowerCase();
+  if (n.includes("user") || n.includes("usuário")) {
+    return value === 1 ? "usuário" : "usuários";
+  }
+  if (n.includes("session") || n.includes("sessão") || n.includes("sessoes")) {
+    return value === 1 ? "sessão" : "sessões";
+  }
+  if (n.includes("event") || n.includes("evento")) {
+    return value === 1 ? "evento" : "eventos";
+  }
+  return name;
+}
+
 function TooltipContent(props: {
   granularity: Granularity;
   label: string;
@@ -42,7 +56,7 @@ function TooltipContent(props: {
       {props.points.map((point) => (
         <p key={point.name}>
           <span className="font-medium">{formatNumber(point.value)}</span>{" "}
-          {point.value === 1 ? point.name.toLowerCase().slice(0, -1) : point.name.toLowerCase()}
+          {formatPointName(point.name, point.value)}
         </p>
       ))}
     </div>

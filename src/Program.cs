@@ -19,6 +19,7 @@ using Features.Cache;
 using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Hosting;
@@ -67,8 +68,6 @@ public partial class Program
             });
         });
 
-        var dataProtectionDir = Path.Combine(appEnv.DataDir, "dataprotection");
-        Directory.CreateDirectory(dataProtectionDir);
         if (appEnv.IsManagedCloud)
         {
             builder.Services.AddDataProtection()
@@ -76,9 +75,17 @@ public partial class Program
         }
         else
         {
+            var dataDir = Environment.GetEnvironmentVariable("DATA_DIR") ?? "/data";
+            if (!Directory.Exists(dataDir))
+            {
+                dataDir = Path.Combine(Directory.GetCurrentDirectory(), "data");
+            }
+            var keysDir = Path.Combine(dataDir, "dataprotection");
+            Directory.CreateDirectory(keysDir);
+
             builder.Services.AddDataProtection()
                             .SetApplicationName("Aptabase")
-                            .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionDir));
+                            .PersistKeysToFileSystem(new DirectoryInfo(keysDir));
         }
 
         builder.Services.AddControllers();

@@ -29,15 +29,15 @@ type TooltipDataPoint = {
 };
 
 const labels = {
-  "sessions-hour": "Sessions",
-  "sessions-day": "Sessions",
-  "sessions-month": "Sessions",
-  "events-hour": "Events",
-  "events-day": "Events",
-  "events-month": "Events",
-  "users-hour": "Users",
-  "users-day": "Users",
-  "users-month": "Daily Users",
+  "sessions-hour": "Sessões",
+  "sessions-day": "Sessões",
+  "sessions-month": "Sessões",
+  "events-hour": "Eventos",
+  "events-day": "Eventos",
+  "events-month": "Eventos",
+  "users-hour": "Usuários",
+  "users-day": "Usuários",
+  "users-month": "Usuários Diários",
 };
 
 export function MetricsChart(props: Props) {
@@ -63,9 +63,9 @@ export function MetricsChart(props: Props) {
       isEmpty={props.isEmpty}
       isLoading={props.isLoading}
       isError={props.isError}
-      formatLabel={props.formatLabel}
-      renderTooltip={props.renderTooltip}
       refetch={props.refetch}
+      renderTooltip={props.renderTooltip}
+      formatLabel={props.formatLabel}
     />
   );
 }
