@@ -32,9 +32,9 @@ export function Component() {
 
   const subtitle = () => {
     if (isLoading) return "";
-    if (totalUsers === 0) return "No users in the last hour";
-    if (totalUsers === 1) return "1 user in the last hour";
-    return `${totalUsers} users in the last hour`;
+    if (totalUsers === 0) return "Nenhum usuário na última hora";
+    if (totalUsers === 1) return "1 usuário na última hora";
+    return `${totalUsers} usuários na última hora`;
   };
 
   const aside = () => {
@@ -45,15 +45,15 @@ export function Component() {
   return (
     <Page title="Visualização ao Vivo">
       {buildMode === "debug" && <DebugModeBanner />}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
         <PageHeading title="Visualização ao Vivo" aside={aside()} subtitle={subtitle()} />
         <div className="flex items-center">
           <BuildModeSelector />
         </div>
       </div>
 
-      <div className="py-0 md:p-10 flex items-center justify-center">
-        <WorldMap className="h-[20rem] sm:h-[30rem]" points={dataPoints || []} />
+      <div className="w-full my-4 px-1 flex items-center justify-center overflow-hidden">
+        <WorldMap className="w-full h-auto max-w-full aspect-[2000/857]" points={dataPoints || []} />
       </div>
 
       <RecentSessionsList appId={app.id} buildMode={buildMode} />

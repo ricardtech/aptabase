@@ -16,8 +16,8 @@ type Props = {
 };
 
 function calculateRadius(users: number, maxUsers: number) {
-  const minRadius = 5;
-  const maxRadius = 20;
+  const minRadius = 6;
+  const maxRadius = 24;
   const scaleFactor = users / (maxUsers || 1);
   return minRadius + scaleFactor * (maxRadius - minRadius);
 }
@@ -31,7 +31,7 @@ export function WorldMap(props: Props) {
       <svg
         id="worldmap"
         baseProfile="tiny"
-        className={`text-foreground stroke-background ${props.className}`}
+        className={`w-full h-auto max-w-full text-foreground stroke-background ${props.className || ""}`}
         fill="currentColor"
         version="1.2"
         strokeWidth="1"
@@ -58,7 +58,6 @@ export function WorldMap(props: Props) {
           />
         ))}
       </svg>
-      <div id="world-map-tooltip-container" />
     </>
   );
 }

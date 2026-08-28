@@ -1,4 +1,5 @@
 import { TrialReminder } from "@features/billing";
+import { PwaPrompt } from "@components/PwaPrompt";
 import { AppSelector } from "../features/apps";
 import { useAuthState } from "../features/auth";
 import { MobileSidebar, NavMenu, UserMenu } from "../features/navigation";
@@ -14,42 +15,43 @@ export function ConsoleLayout() {
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-background text-foreground">
       <MobileSidebar open={sidebarOpen} onClose={setSidebarOpen} />
+      <PwaPrompt />
 
       {/* Static sidebar for desktop */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-grow flex-col overflow-y-auto border-r">
-          <div className="flex justify-between items-center p-2 border-b">
+        <div className="flex flex-grow flex-col overflow-y-auto border-r bg-card/30">
+          <div className="flex justify-between items-center p-3 border-b">
             <AppSelector />
           </div>
-          <div className="p-2 flex flex-grow flex-col mt-2">
+          <div className="p-3 flex flex-grow flex-col mt-2">
             <NavMenu />
           </div>
-          <div className="p-2 space-y-1">
+          <div className="p-3 space-y-1 border-t">
             <TrialReminder />
             <UserMenu user={auth.user} />
           </div>
         </div>
       </div>
 
-      <div className="lg:pl-64">
-        <div className="flex flex-col">
-          {/* sidebar for mobile */}
-          <div className="lg:hidden sticky top-0 z-30 flex h-12 flex-shrink-0 border-b bg-background">
+      <div className="lg:pl-64 flex flex-col min-h-screen">
+        {/* Top Navbar for mobile */}
+        <header className="lg:hidden sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b bg-background/95 backdrop-blur px-3">
+          <div className="flex items-center space-x-2 min-w-0 flex-1">
             <MobileSidebar.Button onClick={() => setSidebarOpen(true)} />
-            <div className="flex justify-between flex-grow items-center px-2 border-r">
+            <div className="min-w-0 flex-1 max-w-[200px] xs:max-w-[250px]">
               <AppSelector />
             </div>
-            <div className="flex items-center px-2">
-              <UserMenu user={auth.user} />
-            </div>
           </div>
+          <div className="flex items-center pl-2 flex-shrink-0">
+            <UserMenu user={auth.user} />
+          </div>
+        </header>
 
-          <main className="flex-1 p-4 lg:px-8 mx-auto w-full max-w-6xl">
-            <Outlet />
-          </main>
-        </div>
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 mx-auto w-full max-w-6xl overflow-x-hidden">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

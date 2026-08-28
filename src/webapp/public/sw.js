@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ricardtech-telemetry-v1.2.0';
+const CACHE_NAME = 'ricardtech-telemetry-v1.3.0';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -6,6 +6,12 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(clients.claim());
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', (event) => {
