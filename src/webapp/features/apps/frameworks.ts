@@ -14,7 +14,7 @@ const frameworks: Record<string, FrameworkInstructions> = {
     icon: "https://aptabase.com/tools/android.svg",
   },
   swift: {
-    name: "Apple (Swift)",
+    name: "Apple (iOS / macOS / Swift)",
     baseURL: "https://raw.githubusercontent.com/aptabase/aptabase-swift/main/",
     repository: "https://github.com/aptabase/aptabase-swift",
     icon: "https://aptabase.com/tools/apple.svg",
@@ -96,13 +96,13 @@ const frameworks: Record<string, FrameworkInstructions> = {
     invert: true,
   },
   webapp: {
-    name: "Web App",
+    name: "Web App (JS / TS)",
     baseURL: "https://raw.githubusercontent.com/aptabase/aptabase-js/main/packages/web/",
     repository: "https://github.com/aptabase/aptabase-js/tree/main/packages/web",
     icon: "https://aptabase.com/tools/javascript.svg",
   },
   browser: {
-    name: "Browser Extension",
+    name: "Extensão de Navegador (Chrome / Edge / Firefox)",
     baseURL: "https://raw.githubusercontent.com/aptabase/aptabase-js/main/packages/browser/",
     repository: "https://github.com/aptabase/aptabase-js/tree/main/packages/browser",
     icon: "https://aptabase.com/tools/chrome.svg",

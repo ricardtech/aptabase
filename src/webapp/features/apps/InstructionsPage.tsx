@@ -16,13 +16,13 @@ function translateSdkInstructions(raw: string): string {
   if (!raw) return "";
 
   return raw
-    // Trocar comandos de npm/yarn/pnpm para bun
+    // Comandos de pacotes -> bun
     .replace(/npm\s+(?:install|i|add)\s+([@\w\d\-\/]+)/gi, "bun add $1")
     .replace(/yarn\s+add\s+([@\w\d\-\/]+)/gi, "bun add $1")
     .replace(/pnpm\s+add\s+([@\w\d\-\/]+)/gi, "bun add $1")
     .replace(/npx\s+/gi, "bunx ")
 
-    // Títulos e seções
+    // Títulos e cabeçalhos
     .replace(/^#\s+Aptabase SDK for (.*)$/gim, "# SDK do Aptabase para $1")
     .replace(/^#\s+(.*)SDK for (.*)$/gim, "# SDK do Aptabase para $2")
     .replace(/^##\s+Installation/gim, "## Instalação")
@@ -33,15 +33,26 @@ function translateSdkInstructions(raw: string): string {
     .replace(/^##\s+Track Events/gim, "## Rastreamento de Eventos")
     .replace(/^###\s+Initialize the SDK/gim, "### Inicializando o SDK")
     .replace(/^###\s+Track Events/gim, "### Rastreamento de Eventos")
+    .replace(/^##\s+Browser Extensions/gim, "## Extensões de Navegador")
+    .replace(/^##\s+Getting Started/gim, "## Primeiros Passos")
+    .replace(/^##\s+Supported Platforms/gim, "## Plataformas Suportadas")
+    .replace(/^##\s+Prerequisites/gim, "## Pré-requisitos")
 
-    // Frases comuns
+    // Frases explicativas
     .replace(/Install the SDK using npm or your preferred JavaScript package manager/gi, "Instale o SDK utilizando o **bun** (ou seu gerenciador de pacotes preferido):")
     .replace(/Install the SDK using npm/gi, "Instale o SDK utilizando o **bun**:")
     .replace(/A tiny SDK \((.*?)\) to instrument your (.*?) with Aptabase, an Open Source, Privacy-First and Simple Analytics for Mobile, Desktop and Web Apps\./gi, "Um SDK ultraleve ($1) para integrar sua aplicação ($2) com o Aptabase, telemetria segura, em tempo real e focada em privacidade.")
     .replace(/First, install the package:/gi, "Primeiro, instale o pacote:")
     .replace(/Add the SDK to your project:/gi, "Adicione o SDK ao seu projeto:")
     .replace(/Initialize the SDK as early as possible:/gi, "Inicialize o SDK o mais cedo possível na sua aplicação:")
-    .replace(/You can then track events with:/gi, "Você pode então rastrear eventos chamando:");
+    .replace(/Initialize the SDK during the extension startup:/gi, "Inicialize o SDK durante a inicialização da extensão:")
+    .replace(/You can then track events with:/gi, "Você pode então rastrear eventos chamando:")
+    .replace(/You can track custom events using the `trackEvent` function:/gi, "Você pode rastrear eventos personalizados utilizando a função `trackEvent`:")
+    .replace(/The SDK automatically tracks sessions and environment info like OS and Screen Resolution\./gi, "O SDK rastreia automaticamente sessões e informações do dispositivo, como Sistema Operacional e resolução de tela.")
+    .replace(/Event properties are optional, and can be used to add more context to the event\./gi, "As propriedades dos eventos são opcionais e podem ser utilizadas para adicionar mais contexto ao evento.")
+    .replace(/If you're building a Chrome \/ Firefox \/ Edge extension, you should use the @aptabase\/browser package instead\./gi, "Se você está criando uma extensão para Chrome / Firefox / Edge, utilize o pacote `@aptabase/browser`.")
+    .replace(/To learn more about Aptabase, check out the documentation at/gi, "Para saber mais sobre o Aptabase, confira a documentação em")
+    .replace(/Parameters:/gi, "Parâmetros:");
 }
 
 const fetchInstructions = async (id: string): Promise<[FrameworkInstructions, string]> => {
@@ -101,7 +112,7 @@ export function Component() {
         <div className="flex items-center border-b pb-4 justify-between">
           <div className="flex items-center space-x-4">
             <Select onValueChange={setSelected}>
-              <SelectTrigger className="w-[220px]">
+              <SelectTrigger className="w-[280px]">
                 <SelectValue placeholder="Selecione um framework" />
               </SelectTrigger>
               <SelectContent className="max-h-[400px]">
