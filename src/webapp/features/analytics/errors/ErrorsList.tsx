@@ -73,7 +73,7 @@ async function fetchErrors(
   if (errorType) params.append("errorType", errorType);
   if (severity) params.append("severity", severity);
 
-  const response = await fetch(`/api/_errors?${params.toString()}`);
+  const response = await fetch(`/api/v0/apps/${appId}/errors?${params.toString()}`);
   if (!response.ok) {
     throw new Error("Failed to fetch errors");
   }

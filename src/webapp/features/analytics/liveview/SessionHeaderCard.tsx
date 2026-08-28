@@ -12,21 +12,21 @@ type Props = {
 
 export function SessionHeaderCard(props: Props) {
   const { eventsCount, startedAt, duration, appVersion, countryCode, osName, osVersion, regionName } = props.session;
-  const shortSessionId = props.session.id.slice(-8);
+  const displayName = props.session.id;
 
   return (
     <div className="text-sm flex flex-col gap-1 p-2">
       <div className="flex items-center gap-4">
-        <div className="text-lg min-w-[6rem]">{shortSessionId}</div>
+        <div className="text-base font-semibold truncate max-w-full text-primary">{displayName}</div>
       </div>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1 min-w-[8rem]">
           <IconDevices className="text-muted-foreground h-4 w-4" />
-          <span>Version {appVersion}</span>
+          <span>Versão {appVersion}</span>
         </div>
         <div className="flex items-center gap-1">
           <IconClick className="text-muted-foreground h-4 w-4" />
-          <span>{eventsCount} events</span>
+          <span>{eventsCount} eventos</span>
         </div>
       </div>
       <div className="flex items-center gap-4">
