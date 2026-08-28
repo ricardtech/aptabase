@@ -49,7 +49,7 @@ export function AppSelector() {
               {currentApp && <AppIcon className="w-5 h-5" iconPath={currentApp.iconPath} />}
               <div className="flex items-center justify-between truncate w-full">
                 <span className="block truncate">
-                  {currentApp?.name ?? <span className="text-muted-foreground text-sm">Select an App</span>}
+                  {currentApp?.name ?? <span className="text-muted-foreground text-sm">Selecione um App</span>}
                 </span>
                 <div className="w-4 h-4 ml-1">
                   <IconSelector strokeWidth={2} className="h-4 w-4 text-muted-foreground" />

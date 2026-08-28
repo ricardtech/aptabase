@@ -7,9 +7,21 @@ export function PwaPrompt() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [dismissedInstall, setDismissedInstall] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
 
   useEffect(() => {
-    // 1. Captura evento de instalação PWA
+    // Detecta se é dispositivo móvel (celular/tablet)
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+      const isMobileUA = /android|iphone|ipad|ipod|windows phone/i.test(userAgent);
+      const isSmallScreen = window.innerWidth <= 768;
+      setIsMobileDevice(isMobileUA || isSmallScreen);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    // 1. Captura evento de instalação PWA (apenas se for celular)
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setInstallPrompt(e);
@@ -33,7 +45,6 @@ export function PwaPrompt() {
         });
       });
 
-      // Recarrega quando novo service worker assumir o controle
       let refreshing = false;
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         if (!refreshing) {
@@ -44,6 +55,7 @@ export function PwaPrompt() {
     }
 
     return () => {
+      window.removeEventListener("resize", checkMobile);
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
     };
   }, []);
@@ -67,7 +79,7 @@ export function PwaPrompt() {
 
   return (
     <>
-      {/* Notificação de Nova Versão Disponível */}
+      {/* Notificação de Nova Versão Disponível (para PC e Celular) */}
       {updateAvailable && (
         <div className="fixed bottom-4 right-4 z-50 flex items-center gap-3 bg-primary text-primary-foreground px-4 py-3 rounded-lg shadow-xl border border-primary/20 animate-bounce">
           <IconRefresh className="h-5 w-5 animate-spin" />
@@ -80,16 +92,16 @@ export function PwaPrompt() {
         </div>
       )}
 
-      {/* Banner de Instalação do PWA */}
-      {installPrompt && !dismissedInstall && !updateAvailable && (
-        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-50 flex items-center justify-between gap-3 bg-card text-card-foreground p-3 sm:px-4 sm:py-3 rounded-lg shadow-lg border">
+      {/* Banner de Instalação do PWA (Apenas para CELULAR) */}
+      {isMobileDevice && installPrompt && !dismissedInstall && !updateAvailable && (
+        <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between gap-3 bg-card text-card-foreground p-3 rounded-lg shadow-lg border">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-primary/10 text-primary rounded-md">
               <IconDeviceMobile className="h-5 w-5" />
             </div>
             <div>
               <p className="text-sm font-semibold leading-tight">Instalar Aplicativo</p>
-              <p className="text-xs text-muted-foreground">Instale na tela de início para acesso rápido</p>
+              <p className="text-xs text-muted-foreground">Adicione à tela de início para acesso rápido</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">

@@ -45,7 +45,7 @@ export function CreateAppModal(props: Props) {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black bg-opacity-10 backdrop-blur-sm transition-opacity" />
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -69,28 +69,39 @@ export function CreateAppModal(props: Props) {
                     <IconX className="h-6 w-6" />
                   </button>
                 </div>
-                <Dialog.Title as="h3" className="text-lg font-medium">
-                  Register a new app
+                <Dialog.Title as="h3" className="text-lg font-semibold">
+                  Criar novo aplicativo
                 </Dialog.Title>
-                <form onSubmit={handleSubmit} className="mt-2">
+                <form onSubmit={handleSubmit} className="mt-4">
                   <TextInput
                     name="name"
-                    placeholder="App Name"
+                    placeholder="Nome do Aplicativo"
                     autoComplete="off"
                     required={true}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
-                  <p className="text-sm text-muted-foreground mt-1">
-                    A friendly name to identify your app. You can change it later.
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Um nome amigável para identificar seu app. Você pode alterar a qualquer momento.
                   </p>
-                  <Button
-                    className="mt-4"
-                    disabled={name.length < 2 || name.length > 40 || processing}
-                    loading={processing}
-                  >
-                    Confirm
-                  </Button>
+                  <div className="mt-5 sm:flex sm:flex-row-reverse gap-2">
+                    <Button
+                      type="submit"
+                      disabled={name.length < 2 || name.length > 40 || processing}
+                      loading={processing}
+                      className="w-full sm:w-auto"
+                    >
+                      Criar Aplicativo
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={close}
+                      className="mt-2 sm:mt-0 w-full sm:w-auto"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
                 </form>
               </Dialog.Panel>
             </Transition.Child>

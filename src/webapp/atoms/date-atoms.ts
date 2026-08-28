@@ -19,7 +19,7 @@ import { locationAtom } from "./location-atoms";
 export const periodAtom = atomWithLocalAndUrlPersistence("period", "24h");
 
 // #region startDate
-export const startDatePersistentLabelAtom = atomWithLocalAndUrlPersistence<string>("startDateLabel", "24 hours ago");
+export const startDatePersistentLabelAtom = atomWithLocalAndUrlPersistence<string>("startDateLabel", "24 horas atrás");
 const startDateBaseAtom = atom<DateSuggestion | null>(null);
 export const startDateAtom = atom(
   (get) => get(startDateBaseAtom),
@@ -41,7 +41,7 @@ export const startDateIsoStringAtom = atom((get) => {
 });
 
 // #region endDate
-export const endDatePersistentLabelAtom = atomWithLocalAndUrlPersistence<string>("endDateLabel", "Now");
+export const endDatePersistentLabelAtom = atomWithLocalAndUrlPersistence<string>("endDateLabel", "Agora");
 const endDateBaseAtom = atom<DateSuggestion | null>(null);
 export const endDateAtom = atom(
   (get) => get(endDateBaseAtom),

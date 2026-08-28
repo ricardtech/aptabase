@@ -90,7 +90,8 @@ export function useApps() {
 
 export function useCurrentApp() {
   const { apps } = useApps();
-  const { appId } = useParams();
+  const params = useParams();
+  const appId = params.id || params.appId;
 
   if (!appId) return undefined;
 

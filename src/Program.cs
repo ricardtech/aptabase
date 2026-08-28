@@ -67,10 +67,18 @@ public partial class Program
             });
         });
 
+        var dataProtectionDir = Path.Combine(appEnv.DataDir, "dataprotection");
+        Directory.CreateDirectory(dataProtectionDir);
         if (appEnv.IsManagedCloud)
         {
             builder.Services.AddDataProtection()
                             .PersistKeysToAWSSystemsManager("/aptabase/production/aspnet-dataprotection/");
+        }
+        else
+        {
+            builder.Services.AddDataProtection()
+                            .SetApplicationName("Aptabase")
+                            .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionDir));
         }
 
         builder.Services.AddControllers();

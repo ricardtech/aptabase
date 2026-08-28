@@ -61,13 +61,13 @@ export function AppSummaryWidget(props: Props) {
                     <GrowthIndicator
                       current={metrics.current.dailyUsers}
                       previous={metrics.previous?.dailyUsers}
-                      previousFormatted={`${metrics.previous?.dailyUsers.toFixed(0)} daily users`}
+                      previousFormatted={`${metrics.previous?.dailyUsers.toFixed(0)} usuários diários`}
                     />
                     <span className="text-2xl">{metrics?.current.dailyUsers.toFixed(0)}</span>
                   </div>
                 ) : null}
               </div>
-              <div>{metrics ? <p className="text-sm text-muted-foreground text-right">daily users</p> : null}</div>
+              <div>{metrics ? <p className="text-sm text-muted-foreground text-right">usuários diários</p> : null}</div>
             </div>
             <div className="h-16">
               <DailyUsersChart values={dailyUsers ?? []} />
