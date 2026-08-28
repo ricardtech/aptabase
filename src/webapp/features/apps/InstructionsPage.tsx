@@ -1,72 +1,14 @@
 import { trackEvent } from "@aptabase/web";
-import { ErrorState } from "@components/ErrorState";
-import { LoadingState } from "@components/LoadingState";
 import { Markdown } from "@components/Markdown";
 import { Page, PageHeading } from "@components/Page";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@components/Select";
 import { useCurrentApp } from "@features/apps";
 import { IconCopy } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
-import frameworks, { type FrameworkInstructions } from "./frameworks";
-
-function translateSdkInstructions(raw: string): string {
-  if (!raw) return "";
-
-  return raw
-    // Comandos de pacotes -> bun
-    .replace(/npm\s+(?:install|i|add)\s+([@\w\d\-\/]+)/gi, "bun add $1")
-    .replace(/yarn\s+add\s+([@\w\d\-\/]+)/gi, "bun add $1")
-    .replace(/pnpm\s+add\s+([@\w\d\-\/]+)/gi, "bun add $1")
-    .replace(/npx\s+/gi, "bunx ")
-
-    // Títulos e cabeçalhos
-    .replace(/^#\s+Aptabase SDK for (.*)$/gim, "# SDK do Aptabase para $1")
-    .replace(/^#\s+(.*)SDK for (.*)$/gim, "# SDK do Aptabase para $2")
-    .replace(/^##\s+Installation/gim, "## Instalação")
-    .replace(/^##\s+Install/gim, "## Instalação")
-    .replace(/^##\s+Setup/gim, "## Configuração")
-    .replace(/^##\s+Usage/gim, "## Como Usar")
-    .replace(/^##\s+Initialize the SDK/gim, "## Inicializando o SDK")
-    .replace(/^##\s+Track Events/gim, "## Rastreamento de Eventos")
-    .replace(/^###\s+Initialize the SDK/gim, "### Inicializando o SDK")
-    .replace(/^###\s+Track Events/gim, "### Rastreamento de Eventos")
-    .replace(/^##\s+Browser Extensions/gim, "## Extensões de Navegador")
-    .replace(/^##\s+Getting Started/gim, "## Primeiros Passos")
-    .replace(/^##\s+Supported Platforms/gim, "## Plataformas Suportadas")
-    .replace(/^##\s+Prerequisites/gim, "## Pré-requisitos")
-
-    // Frases explicativas
-    .replace(/Install the SDK using npm or your preferred JavaScript package manager/gi, "Instale o SDK utilizando o **bun** (ou seu gerenciador de pacotes preferido):")
-    .replace(/Install the SDK using npm/gi, "Instale o SDK utilizando o **bun**:")
-    .replace(/A tiny SDK \((.*?)\) to instrument your (.*?) with Aptabase, an Open Source, Privacy-First and Simple Analytics for Mobile, Desktop and Web Apps\./gi, "Um SDK ultraleve ($1) para integrar sua aplicação ($2) com o Aptabase, telemetria segura, em tempo real e focada em privacidade.")
-    .replace(/First, install the package:/gi, "Primeiro, instale o pacote:")
-    .replace(/Add the SDK to your project:/gi, "Adicione o SDK ao seu projeto:")
-    .replace(/Initialize the SDK as early as possible:/gi, "Inicialize o SDK o mais cedo possível na sua aplicação:")
-    .replace(/Initialize the SDK during the extension startup:/gi, "Inicialize o SDK durante a inicialização da extensão:")
-    .replace(/You can then track events with:/gi, "Você pode então rastrear eventos chamando:")
-    .replace(/You can track custom events using the `trackEvent` function:/gi, "Você pode rastrear eventos personalizados utilizando a função `trackEvent`:")
-    .replace(/The SDK automatically tracks sessions and environment info like OS and Screen Resolution\./gi, "O SDK rastreia automaticamente sessões e informações do dispositivo, como Sistema Operacional e resolução de tela.")
-    .replace(/Event properties are optional, and can be used to add more context to the event\./gi, "As propriedades dos eventos são opcionais e podem ser utilizadas para adicionar mais contexto ao evento.")
-    .replace(/If you're building a Chrome \/ Firefox \/ Edge extension, you should use the @aptabase\/browser package instead\./gi, "Se você está criando uma extensão para Chrome / Firefox / Edge, utilize o pacote `@aptabase/browser`.")
-    .replace(/To learn more about Aptabase, check out the documentation at/gi, "Para saber mais sobre o Aptabase, confira a documentação em")
-    .replace(/Parameters:/gi, "Parâmetros:");
-}
-
-const fetchInstructions = async (id: string): Promise<[FrameworkInstructions, string]> => {
-  const fw = frameworks[id];
-  if (!fw) {
-    return [fw, ""];
-  }
-
-  trackEvent("instructions_viewed", { framework: id });
-
-  const response = await fetch(`${fw.baseURL}/README.md`);
-  const content = await response.text();
-  return [fw, translateSdkInstructions(content)];
-};
+import frameworks from "./frameworks";
+import { getFrameworkInstructions } from "./customInstructions";
 
 Component.displayName = "InstructionsPage";
 export function Component() {
@@ -74,16 +16,16 @@ export function Component() {
 
   if (!app) return <Navigate to="/" />;
 
-  const [selected, setSelected] = useState("");
-
-  const { isLoading, isError, data } = useQuery({
-    queryKey: ["markdown", selected],
-    queryFn: () => fetchInstructions(selected),
-  });
-
-  const [fw, content] = data || [];
-
+  const [selected, setSelected] = useState("nextjs");
   const [justCopied, setJustCopied] = useState(false);
+
+  const fw = frameworks[selected];
+  const content = getFrameworkInstructions(selected, app.appKey);
+
+  const handleSelectFramework = (frameworkId: string) => {
+    setSelected(frameworkId);
+    trackEvent("instructions_viewed", { framework: frameworkId });
+  };
 
   return (
     <Page title={`${app.name} - Instruções`}>
@@ -91,7 +33,7 @@ export function Component() {
       <div className="flex flex-col space-y-8 mt-8">
         <div className="px-4 py-3 bg-muted max-w-fit rounded border">
           <p className="text-muted-foreground text-sm mb-1 font-medium">
-            Chave de aplicativo para <span className="text-foreground">{app.name}</span>
+            Chave de aplicativo para <span className="text-foreground font-semibold">{app.name}</span>
           </p>
           <div className="flex items-center mb-2 gap-2 min-w-64">
             <span className="font-medium text-xl font-mono">{app.appKey}</span>
@@ -111,21 +53,21 @@ export function Component() {
 
         <div className="flex items-center border-b pb-4 justify-between">
           <div className="flex items-center space-x-4">
-            <Select onValueChange={setSelected}>
-              <SelectTrigger className="w-[280px]">
+            <Select value={selected} onValueChange={handleSelectFramework}>
+              <SelectTrigger className="w-[300px]">
                 <SelectValue placeholder="Selecione um framework" />
               </SelectTrigger>
               <SelectContent className="max-h-[400px]">
                 <SelectGroup>
-                  {Object.entries(frameworks).map(([id, fw]) => (
-                    <SelectItem key={fw.name} value={id}>
+                  {Object.entries(frameworks).map(([id, item]) => (
+                    <SelectItem key={item.name} value={id}>
                       <div className="flex gap-2 items-center">
                         <img
-                          src={fw.icon}
-                          className={twMerge("w-4 h-4", fw.invert && "dark:filter dark:invert")}
-                          alt={fw.name}
+                          src={item.icon}
+                          className={twMerge("w-4 h-4", item.invert && "dark:filter dark:invert")}
+                          alt={item.name}
                         />
-                        <span>{fw.name}</span>
+                        <span>{item.name}</span>
                       </div>
                     </SelectItem>
                   ))}
@@ -148,9 +90,7 @@ export function Component() {
           )}
         </div>
 
-        {isLoading && <LoadingState />}
-        {isError && <ErrorState />}
-        {content && fw && <Markdown content={content} baseURL={fw.baseURL} />}
+        <Markdown content={content} baseURL={fw?.baseURL ?? ""} />
       </div>
     </Page>
   );
