@@ -46,9 +46,9 @@ export function Component() {
   return (
     <Page title="Visualização ao Vivo">
       <div className="flex flex-row justify-between items-center">
-        <PageHeading title="Session Timeline" subtitle={sessionId} />
+        <PageHeading title="Linha do Tempo da Sessão" subtitle={sessionId} />
         <Button className="mb-5" variant="ghost" onClick={handleBack}>
-          <IconArrowLeft /> Back
+          <IconArrowLeft /> Voltar
         </Button>
       </div>
 
@@ -56,7 +56,7 @@ export function Component() {
         <div className="mt-10 flex flex-col">
           <div className="flex gap-2 items-center mb-1">
             <IconDevices className="text-muted-foreground h-5 w-5" />
-            <span className="tabular-nums">App Version {data.appVersion}</span>
+            <span className="tabular-nums">Versão do App {data.appVersion}</span>
           </div>
           <div className="flex gap-2 items-center mb-1">
             <IconUser className="text-muted-foreground h-5 w-5" />

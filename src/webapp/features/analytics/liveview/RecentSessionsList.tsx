@@ -26,8 +26,8 @@ export function RecentSessionsList(props: Props) {
 
   return (
     <div>
-      <p className="font-title text-xl">Recent Sessions</p>
-      <p className="mb-4 text-muted-foreground text-sm">Most active sessions in the last hour.</p>
+      <p className="font-title text-xl">Sessões Recentes</p>
+      <p className="mb-4 text-muted-foreground text-sm">Sessões mais ativas na última hora.</p>
 
       <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
         {sessions.map((s) => (
