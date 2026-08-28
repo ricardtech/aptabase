@@ -98,10 +98,10 @@ public partial class Program
                         {
                             options.ExpireTimeSpan = TimeSpan.FromDays(365);
                             options.Cookie.Name = "auth-session";
-                            options.Cookie.SameSite = SameSiteMode.Strict;
+                            options.Cookie.SameSite = SameSiteMode.Lax;
                             options.Cookie.HttpOnly = true;
                             options.Cookie.IsEssential = true;
-                            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                             options.Cookie.MaxAge = TimeSpan.FromDays(365);
                         }).AddGitHub(appEnv).AddGoogle(appEnv);
 

@@ -16,7 +16,13 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({ user: undefined });
 
 export function AuthProvider(props: Props) {
-  const { isLoading, isError, data: user } = useQuery({ queryKey: ["me"], queryFn: me });
+  const { isLoading, isError, data: user } = useQuery({
+    queryKey: ["me"],
+    queryFn: me,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
+    staleTime: 1000 * 60 * 5,
+  });
 
   if (isLoading) return <LoadingState size="lg" color="primary" delay={0} />;
   if (isError) return <ErrorState />;
