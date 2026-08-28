@@ -61,59 +61,47 @@ async function fetchErrors(
   severity?: string,
 ): Promise<ErrorsResponse> {
   const params = new URLSearchParams({
+    appId,
     buildMode,
     offset: offset.toString(),
     limit: limit.toString(),
   });
 
-  if (startDate) params.set("startDate", startDate);
-  if (endDate) params.set("endDate", endDate);
-  if (osName && osName !== "all") params.set("osName", osName);
-  if (errorType && errorType !== "all") params.set("errorType", errorType);
-  if (severity && severity !== "all") params.set("severity", severity);
+  if (startDate) params.append("startDate", startDate);
+  if (endDate) params.append("endDate", endDate);
+  if (osName) params.append("osName", osName);
+  if (errorType) params.append("errorType", errorType);
+  if (severity) params.append("severity", severity);
 
-  const response = await fetch(`/api/v0/apps/${appId}/errors?${params}`, {
-    credentials: "include",
-  });
-
+  const response = await fetch(`/api/_errors?${params.toString()}`);
   if (!response.ok) {
     throw new Error("Failed to fetch errors");
   }
-
   return response.json();
 }
 
 function SeverityBadge({ severity }: { severity: string }) {
-  if (!severity) {
-    return <span className="text-muted-foreground text-xs">—</span>;
-  }
-
-  const styles: Record<string, string> = {
-    fatal: "bg-red-500/15 text-red-600 dark:text-red-400",
-    error: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  };
-  const cls = styles[severity] ?? "bg-muted text-muted-foreground";
-
+  const isFatal = severity.toLowerCase() === "fatal";
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${cls}`}>
-      {severity}
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+        isFatal ? "bg-red-900/30 text-red-400 border border-red-800/50" : "bg-yellow-900/30 text-yellow-400 border border-yellow-800/50"
+      }`}
+    >
+      {isFatal ? "Fatal" : "Erro"}
     </span>
   );
 }
 
-interface ErrorsListProps {
-  appId: string;
-}
-
-export function ErrorsList({ appId }: ErrorsListProps) {
+export function ErrorsList({ appId }: { appId: string }) {
   const { buildMode } = useApps();
-  const [offset, setOffset] = useState(0);
-  const limit = 50;
   const [searchParams, setSearchParams] = useSearchParams();
   const dateFilters = useAtomValue(dateFilterValuesAtom);
   const [selectedErrorId, setSelectedErrorId] = useState<string | null>(null);
 
-  // Get filter values from URL params
+  const [offset, setOffset] = useState(0);
+  const limit = 20;
+
   const osName = searchParams.get("osName") || "all";
   const errorType = searchParams.get("errorType") || "all";
   const severity = searchParams.get("severity") || "all";
@@ -154,7 +142,7 @@ export function ErrorsList({ appId }: ErrorsListProps) {
       newParams.set("osName", value);
     }
     setSearchParams(newParams);
-    setOffset(0); // Reset to first page when filters change
+    setOffset(0);
   };
 
   const handleErrorTypeChange = (value: string) => {
@@ -165,7 +153,7 @@ export function ErrorsList({ appId }: ErrorsListProps) {
       newParams.set("errorType", value);
     }
     setSearchParams(newParams);
-    setOffset(0); // Reset to first page when filters change
+    setOffset(0);
   };
 
   const handleSeverityChange = (value: string) => {
@@ -176,7 +164,7 @@ export function ErrorsList({ appId }: ErrorsListProps) {
       newParams.set("severity", value);
     }
     setSearchParams(newParams);
-    setOffset(0); // Reset to first page when filters change
+    setOffset(0);
   };
 
   const handlePreviousPage = () => {
@@ -212,34 +200,34 @@ export function ErrorsList({ appId }: ErrorsListProps) {
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
           <IconFilter className="h-5 w-5 text-muted-foreground" />
-          <span className="text-sm font-medium">Filters:</span>
+          <span className="text-sm font-medium">Filtros:</span>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Date Range:</span>
+          <span className="text-sm text-muted-foreground">Período:</span>
           <DateFilterContainer />
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">OS:</span>
+          <span className="text-sm text-muted-foreground">SO:</span>
           <OsFilterDropdown appId={appId} onValueChange={(osName) => handleOsNameChange(osName ?? "all")} />
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Error Type:</span>
+          <span className="text-sm text-muted-foreground">Tipo de Erro:</span>
           <ErrorTypeFilterDropdown appId={appId} value={errorType} onValueChange={handleErrorTypeChange} />
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Severity:</span>
+          <span className="text-sm text-muted-foreground">Severidade:</span>
           <Select value={severity} onValueChange={handleSeverityChange}>
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="all">Todas</SelectItem>
               <SelectItem value="fatal">Fatal</SelectItem>
-              <SelectItem value="error">Error</SelectItem>
+              <SelectItem value="error">Erro</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -257,21 +245,21 @@ export function ErrorsList({ appId }: ErrorsListProps) {
                     <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold">
                       <div className="flex items-center gap-2">
                         <IconClock className="text-muted-foreground h-5 w-5" />
-                        Timestamp
+                        Data / Hora
                       </div>
                     </th>
                     <th className="px-3 py-3.5 text-left text-sm font-semibold">
                       <div className="flex items-center gap-2">
                         <IconAlertTriangle className="text-muted-foreground h-5 w-5" />
-                        Error Type
+                        Tipo de Erro
                       </div>
                     </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold">Severity</th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold">Message</th>
+                    <th className="px-3 py-3.5 text-left text-sm font-semibold">Severidade</th>
+                    <th className="px-3 py-3.5 text-left text-sm font-semibold">Mensagem</th>
                     <th className="px-3 py-3.5 text-left text-sm font-semibold">
                       <div className="flex items-center gap-2">
                         <IconDeviceDesktop className="text-muted-foreground h-5 w-5" />
-                        OS
+                        Sistema Operacional
                       </div>
                     </th>
                   </tr>
@@ -284,7 +272,7 @@ export function ErrorsList({ appId }: ErrorsListProps) {
                       onClick={() => setSelectedErrorId(error.errorId)}
                     >
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm">
-                        {new Date(error.timestamp).toLocaleString()}
+                        {new Date(error.timestamp).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm">{error.errorType}</td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm">
@@ -311,15 +299,15 @@ export function ErrorsList({ appId }: ErrorsListProps) {
       {data.pagination.total > 0 && (
       <div className="flex justify-between items-center mt-4">
         <div className="text-sm text-muted-foreground">
-          Showing {offset + 1} to {Math.min(offset + limit, data.pagination.total)} of {data.pagination.total} errors
+          Exibindo {offset + 1} a {Math.min(offset + limit, data.pagination.total)} de {data.pagination.total} erros
         </div>
         <div className="flex gap-2">
           <Button disabled={!hasPreviousPage || isPlaceholderData} variant="ghost" onClick={handlePreviousPage}>
             <IconChevronLeft className="h-4 w-4" />
-            Previous
+            Anterior
           </Button>
           <Button disabled={!hasNextPage || isPlaceholderData} variant="ghost" onClick={handleNextPage}>
-            Next
+            Próximo
             <IconChevronRight className="h-4 w-4" />
           </Button>
         </div>

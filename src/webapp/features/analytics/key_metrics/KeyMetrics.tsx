@@ -59,7 +59,7 @@ export function KeyMetrics(props: Props) {
       {!isLoading && !isError && (
         <>
           <Metric
-            label="Daily Users"
+            label="Usuários Diários"
             current={metrics?.current.dailyUsers ?? 0}
             previous={metrics?.previous?.dailyUsers}
             activeClassName="bg-primary"
@@ -68,7 +68,7 @@ export function KeyMetrics(props: Props) {
             format="number"
           />
           <Metric
-            label="Sessions"
+            label="Sessões"
             current={metrics?.current.sessions ?? 0}
             previous={metrics?.previous?.sessions}
             activeClassName="bg-primary"
@@ -77,7 +77,7 @@ export function KeyMetrics(props: Props) {
             format="number"
           />
           <Metric
-            label="Events"
+            label="Eventos"
             current={metrics?.current.events ?? 0}
             previous={metrics?.previous?.events}
             activeClassName="bg-primary"
@@ -86,7 +86,7 @@ export function KeyMetrics(props: Props) {
             format="number"
           />
           <Metric
-            label="Avg. Duration"
+            label="Duração Média"
             current={metrics?.current.durationSeconds || 0}
             previous={metrics?.previous?.durationSeconds}
             format="duration"

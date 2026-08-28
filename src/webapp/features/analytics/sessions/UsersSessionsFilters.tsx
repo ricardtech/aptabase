@@ -46,7 +46,7 @@ export function UsersSessionsFilters({ appId, onFiltersChange }: Props) {
           }`}
         >
           <div className="overflow-hidden">
-            <div className="flex flex-row items-center gap-4 mt-4">
+            <div className="flex flex-wrap items-center gap-3 mt-4">
               <EventNameFilterDropdown appId={appId} onValueChange={(eventName) => updateFilters({ eventName })} />
               <OsFilterDropdown appId={appId} onValueChange={(osName) => updateFilters({ osName })} />
               <CountryFilterDropdown appId={appId} onValueChange={(country) => updateFilters({ country })} />
@@ -62,7 +62,7 @@ export function UsersSessionsFilters({ appId, onFiltersChange }: Props) {
           <IconChevronDown
             className={`h-3 w-3 transition-transform duration-200 ${isFiltersExpanded ? "rotate-0" : "-rotate-90"}`}
           />
-          {isFiltersExpanded ? "Hide Filters" : "Show Filters"}
+          {isFiltersExpanded ? "Ocultar Filtros" : "Exibir Filtros"}
         </button>
       </div>
     </div>

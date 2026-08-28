@@ -27,7 +27,7 @@ export function OSWidget(props: Props) {
               </TopNTitle>
             }
             defaultFormat="percentage"
-            valueLabel="Sessions"
+            valueLabel="Sessões"
           />
         )}
       </TopNDataContainer>
@@ -40,10 +40,10 @@ export function OSWidget(props: Props) {
         <TopNChart
           {...data}
           id="osnames"
-          title="Operating Systems"
+          title="Sistemas Operacionais"
           searchParamKey="osName"
           defaultFormat="percentage"
-          valueLabel="Sessions"
+          valueLabel="Sessões"
           renderRow={(item) => <OS name={item.name} />}
         />
       )}

@@ -8,21 +8,21 @@ type Option = {
 };
 
 const options: Option[] = [
-  { value: "today", name: "Today" },
-  { value: "yesterday", name: "Yesterday" },
+  { value: "today", name: "Hoje" },
+  { value: "yesterday", name: "Ontem" },
   { value: "divider-6", name: "Divider" },
-  { value: "24h", name: "Last 24 hours" },
-  { value: "48h", name: "Last 48 hours" },
+  { value: "24h", name: "Últimas 24 horas" },
+  { value: "48h", name: "Últimas 48 horas" },
   { value: "divider-2", name: "Divider" },
-  { value: "7d", name: "Last 7 days" },
-  { value: "30d", name: "Last 30 days" },
+  { value: "7d", name: "Últimos 7 dias" },
+  { value: "30d", name: "Últimos 30 dias" },
   { value: "divider-1", name: "Divider" },
-  { value: "90d", name: "Last 3 months" },
-  { value: "180d", name: "Last 6 months" },
-  { value: "365d", name: "Last 12 months" },
+  { value: "90d", name: "Últimos 3 meses" },
+  { value: "180d", name: "Últimos 6 meses" },
+  { value: "365d", name: "Últimos 12 meses" },
   { value: "divider-4", name: "Divider" },
-  { value: "all", name: "All time" },
-  { value: "custom", name: "Custom" },
+  { value: "all", name: "Todo o período" },
+  { value: "custom", name: "Personalizado" },
 ];
 
 type StyledOptionProps = {
@@ -46,7 +46,7 @@ export function DateRangePicker() {
 
   return (
     <Select value={period} onValueChange={setPeriod}>
-      <SelectTrigger className="w-36">
+      <SelectTrigger className="w-38 sm:w-44">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

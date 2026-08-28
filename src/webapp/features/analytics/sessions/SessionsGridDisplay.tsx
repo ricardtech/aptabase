@@ -65,37 +65,37 @@ export function SessionsGridDisplay(props: Props) {
                 <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold sm:pl-6 lg:pl-8">
                   <div className="flex items-center gap-2">
                     <IconUser className="text-muted-foreground h-5 w-5" />
-                    Timestamp
+                    Data / Hora
                   </div>
                 </th>
                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                   <div className="flex items-center gap-2">
                     <IconClock className="text-muted-foreground h-5 w-5" />
-                    Duration
+                    Duração
                   </div>
                 </th>
                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                   <div className="flex items-center gap-2">
                     <IconClick className="text-muted-foreground h-5 w-5" />
-                    Events
+                    Eventos
                   </div>
                 </th>
                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                   <div className="flex items-center gap-2">
                     <IconMap className="text-muted-foreground h-5 w-5" />
-                    Country
+                    País
                   </div>
                 </th>
                 <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6 lg:pr-8">
                   <div className="flex items-center gap-2">
                     <IconDeviceDesktop className="text-muted-foreground h-5 w-5" />
-                    OS
+                    Sistema Operacional
                   </div>
                 </th>
                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold">
                   <div className="flex items-center gap-2">
                     <IconDevices className="text-muted-foreground h-5 w-5" />
-                    App Version
+                    Versão do App
                   </div>
                 </th>
               </tr>

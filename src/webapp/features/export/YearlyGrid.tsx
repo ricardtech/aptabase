@@ -44,7 +44,7 @@ export function YearlyGrid(props: Props) {
 
   return (
     <div>
-      <p className="font-title text-lg">{props.year}</p>
+      <p className="font-title text-lg mb-2">{props.year}</p>
       <div className="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-6 max-w-fit gap-3">
         {props.months.map((month) =>
           month.events < EVENTS_COUNT_WITH_DROPDOWN ? (
@@ -56,24 +56,24 @@ export function YearlyGrid(props: Props) {
             >
               <span className="text-sm font-medium">{month.name}</span>
               <span className="text-xs text-muted-foreground">
-                {formatNumber(month.events)} {month.events === 1 ? "event" : "events"}
+                {formatNumber(month.events)} {month.events === 1 ? "evento" : "eventos"}
               </span>
             </Button>
           ) : (
-            <Popover>
+            <Popover key={month.number}>
               <PopoverTrigger className="relative">
-                <Button key={month.number} variant="secondary" className="w-24 flex flex-col px-0 tracking-tighter">
+                <Button variant="secondary" className="w-24 flex flex-col px-0 tracking-tighter">
                   <span className="text-sm font-medium">{month.name}</span>
                   <span className="text-xs text-muted-foreground">
-                    {formatNumber(month.events)} {month.events === 1 ? "event" : "events"}
+                    {formatNumber(month.events)} {month.events === 1 ? "evento" : "eventos"}
                   </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="p-2 w-60">
                 <div className="text-sm space-y-2 text-center">
                   {getWeeks(month.number, props.year).map((week, index) => {
-                    const weekLabel = `Week ${index + 1}`;
-                    const startEndLabel = `${format(week.startDay, "MMM d")} - ${format(week.endDay, "MMM d")}`;
+                    const weekLabel = `Semana ${index + 1}`;
+                    const startEndLabel = `${format(week.startDay, "dd/MM")} - ${format(week.endDay, "dd/MM")}`;
                     return (
                       <Button
                         key={week.startDay.toISOString()}

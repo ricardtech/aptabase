@@ -16,8 +16,8 @@ export function Component() {
     <Page title="Exportar Dados">
       {buildMode === "debug" && <DebugModeBanner />}
 
-      <div className="flex justify-between items-center">
-        <PageHeading title="Exportar Dados" subtitle="Freedom to explore your data" />
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+        <PageHeading title="Exportar Dados" subtitle="Liberdade para explorar e analisar seus dados brutos" />
         <div className="flex items-center">
           <BuildModeSelector />
         </div>

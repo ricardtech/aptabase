@@ -14,15 +14,15 @@ export function Component() {
   if (!app || !app.hasOwnership) return <Navigate to="/" />;
 
   return (
-    <Page title={`${app.name} - Settings`}>
-      <PageHeading title="Configurações" subtitle="Manage your app settings" />
+    <Page title={`${app.name} - Configurações`}>
+      <PageHeading title="Configurações" subtitle="Gerencie as configurações do seu aplicativo" />
 
       <Tabs defaultValue="general" className="mt-8">
         <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="sharing">Sharing</TabsTrigger>
-          <TabsTrigger value="ownership">Ownership Transfer</TabsTrigger>
-          <TabsTrigger value="danger">Danger Zone</TabsTrigger>
+          <TabsTrigger value="general">Geral</TabsTrigger>
+          <TabsTrigger value="sharing">Compartilhamento</TabsTrigger>
+          <TabsTrigger value="ownership">Transferência de Propriedade</TabsTrigger>
+          <TabsTrigger value="danger">Zona de Perigo</TabsTrigger>
         </TabsList>
         <TabsContent value="general">
           <GeneralSettings app={app} />

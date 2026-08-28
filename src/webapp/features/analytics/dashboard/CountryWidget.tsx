@@ -27,7 +27,7 @@ export function CountryWidget(props: Props) {
               </TopNTitle>
             }
             defaultFormat="percentage"
-            valueLabel="Sessions"
+            valueLabel="Sessões"
           />
         )}
       </TopNDataContainer>
@@ -41,10 +41,10 @@ export function CountryWidget(props: Props) {
           {...data}
           id="countries"
           key="countries"
-          title="Countries"
+          title="Países"
           searchParamKey="countryCode"
           defaultFormat="percentage"
-          valueLabel="Sessions"
+          valueLabel="Sessões"
           renderRow={(item) => <Country countryCode={item.name} />}
         />
       )}

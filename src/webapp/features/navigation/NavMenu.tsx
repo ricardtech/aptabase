@@ -39,7 +39,7 @@ export function NavMenu(props: { onNavigation?: VoidFunction }) {
             onNavigation={props.onNavigation}
           />
           <NavItem
-            label="User Sessions"
+            label="Usuários e Sessões"
             disabled={!currentApp || !!currentApp.lockReason}
             href={`/${currentApp?.id}/sessions`}
             icon={IconUsers}

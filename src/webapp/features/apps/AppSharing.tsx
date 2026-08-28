@@ -49,7 +49,7 @@ export function AppSharing(props: Props) {
       <div>
         <div className="flex items-center space-x-2 mb-4">
           <IconShare className="h-5 w-5 text-foreground" />
-          <h3 className="text-lg font-medium">Shared With</h3>
+          <h3 className="text-lg font-medium">Compartilhado com</h3>
         </div>
         {shares && shares.length >= 1 && (
           <ul className="grid md:grid-cols-3 gap-2 mb-6">
@@ -62,36 +62,31 @@ export function AppSharing(props: Props) {
         <form onSubmit={handleShareSubmit} className="space-y-4 max-w-[40rem]">
           <div className="flex items-center space-x-2">
             <TextInput
-              label="Share with:"
+              label="Compartilhar com:"
               name="email"
               type="email"
               required={true}
               value={email}
-              placeholder="peter.parker@corp.com"
+              placeholder="exemplo@ricardtech.com"
               maxLength={300}
               onChange={(e) => setEmail(e.target.value)}
-              description="Enter the email address you want to share your app with."
+              description="Digite o endereço de e-mail do usuário com quem deseja compartilhar."
             />
-            <Button disabled={email.length === 0}>Share</Button>
+            <Button disabled={email.length === 0}>Compartilhar</Button>
           </div>
         </form>
       </div>
 
       <Alert className="max-w-[40rem]">
         <IconHelp className="h-4 w-4" />
-        <AlertTitle>How does sharing work?</AlertTitle>
+        <AlertTitle>Como funciona o compartilhamento?</AlertTitle>
         <AlertDescription className="text-muted-foreground">
           <ol className="list-decimal mx-4 my-2 space-y-1">
-            <li>Sharing an app allows other users to have read-only access to your app's dashboards.</li>
-            <li>You remain the owner of the app and its billing.</li>
-            <li>You can revoke access at any time.</li>
-            <li>Shared users cannot modify app settings or transfer ownership.</li>
+            <li>O compartilhamento permite que outros usuários visualizem os painéis do seu aplicativo em modo somente leitura.</li>
+            <li>Você continua como proprietário do app e responsável pelo gerenciamento.</li>
+            <li>Você pode revogar o acesso a qualquer momento.</li>
+            <li>Usuários convidados não podem alterar configurações ou transferir a propriedade.</li>
           </ol>
-
-          <p className="mt-3">
-            <span className="font-bold">Note:</span> Aptabase won't send an email as part of the sharing process. We
-            recommend contacting users directly and asking them to sign up.
-          </p>
         </AlertDescription>
       </Alert>
     </div>

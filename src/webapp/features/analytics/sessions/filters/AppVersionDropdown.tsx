@@ -28,7 +28,7 @@ export function AppVersionDropdown(props: Props) {
           value={selectedAppVersion}
           onValueChange={setSelectedAppVersion}
           data={data}
-          placeholder="Select App Version"
+          placeholder="Selecionar Versão"
         />
       )}
     </FilterDropdownQuery>

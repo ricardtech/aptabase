@@ -59,39 +59,38 @@ export function OwnershipTransfer(props: Props) {
       <div className="max-w-[40rem]">
         <div className="flex items-center space-x-2 mb-4">
           <IconCrown className="h-5 w-5 text-foreground" />
-          <h3 className="text-lg font-medium">Transfer Ownership</h3>
+          <h3 className="text-lg font-medium">Transferir Propriedade</h3>
         </div>
 
         {hasPendingTransfer ? (
           <div className="border border-warning/20 bg-warning/10 rounded-md p-4">
             <div className="flex items-center space-x-2 mb-2">
               <IconClock className="h-4 w-4 text-warning" />
-              <p className="font-medium text-warning-foreground">Transfer Pending</p>
+              <p className="font-medium text-warning-foreground">Transferência Pendente</p>
             </div>
             <p className="text-sm text-warning-foreground mb-3">
-              Ownership transfer to <span className="font-semibold">{ownershipTransfer.targetUserEmail}</span> is
-              pending approval.
+              A transferência de propriedade para <span className="font-semibold">{ownershipTransfer.targetUserEmail}</span> está aguardando aprovação.
             </p>
             <Button variant="outline" size="sm" onClick={handleCancelTransfer}>
-              Cancel Transfer
+              Cancelar Transferência
             </Button>
           </div>
         ) : (
           <form onSubmit={handleTransferSubmit} className="space-y-4">
             <div className="flex items-center space-x-2">
               <TextInput
-                label="Transfer to:"
+                label="Transferir para:"
                 name="newOwnerEmail"
                 type="email"
                 required={true}
                 value={newOwnerEmail}
-                placeholder="new.owner@corp.com"
+                placeholder="novo.proprietario@ricardtech.com"
                 maxLength={300}
                 onChange={(e) => setNewOwnerEmail(e.target.value)}
-                description="Enter the email of the user who will become the new owner."
+                description="Digite o e-mail do usuário que se tornará o novo proprietário."
               />
               <Button variant="destructive" disabled={newOwnerEmail.length === 0} type="submit">
-                Transfer Ownership
+                Transferir Propriedade
               </Button>
             </div>
           </form>
@@ -100,22 +99,17 @@ export function OwnershipTransfer(props: Props) {
 
       <Alert className="max-w-[40rem]">
         <IconHelp className="h-4 w-4" />
-        <AlertTitle>How does ownership transfer work?</AlertTitle>
+        <AlertTitle>Como funciona a transferência de propriedade?</AlertTitle>
         <AlertDescription className="text-muted-foreground">
           <ol className="list-decimal mx-4 my-2 space-y-1">
-            <li>Transferring ownership gives another user full control of the app.</li>
-            <li>The new owner becomes responsible for billing and management.</li>
-            <li>You will be added to the sharing list with read-only access.</li>
-            <li>This action requires approval from the new owner.</li>
+            <li>Transferir a propriedade concede a outro usuário o controle total sobre o aplicativo.</li>
+            <li>O novo proprietário se torna responsável pelo faturamento e gerenciamento.</li>
+            <li>Você será mantido na lista de compartilhamento com acesso de leitura.</li>
+            <li>Esta ação requer confirmação e aceite do novo proprietário.</li>
             <li>
-              <span className="font-bold">This action cannot be undone</span> once accepted.
+              <span className="font-bold">Esta ação não pode ser desfeita</span> após ser aceita.
             </li>
           </ol>
-
-          <p className="mt-3">
-            <span className="font-bold">Note:</span> Aptabase won't send an email as part of the transfer process. We
-            recommend contacting the new owner directly to let them know about the pending request.
-          </p>
         </AlertDescription>
       </Alert>
 

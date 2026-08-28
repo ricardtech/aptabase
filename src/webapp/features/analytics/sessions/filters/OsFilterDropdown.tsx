@@ -24,7 +24,7 @@ export function OsFilterDropdown(props: Props) {
   return (
     <FilterDropdownQuery appId={props.appId} queryKey={"sessions-os-dropdown"} query={topOperatingSystem}>
       {(data) => (
-        <FilterDropdownSelect value={selectedOs} onValueChange={setSelectedOs} data={data} placeholder="Select OS" />
+        <FilterDropdownSelect value={selectedOs} onValueChange={setSelectedOs} data={data} placeholder="Selecionar SO" />
       )}
     </FilterDropdownQuery>
   );

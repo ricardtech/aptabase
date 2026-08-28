@@ -8,7 +8,7 @@ type Props = {
 export function FormatPicker(props: Props) {
   return (
     <div className="flex flex-col text-xs max-w-md">
-      <p className="font-medium mb-1">Export Format</p>
+      <p className="font-medium mb-1">Formato de Exportação</p>
       <ToggleGroup defaultValue="csv" onValueChange={props.onChange}>
         <ToggleGroupList>
           <ToggleGroupTrigger value="csv" className="text-xs">
@@ -21,14 +21,12 @@ export function FormatPicker(props: Props) {
       </ToggleGroup>
       {props.value === "csv" && (
         <span className="text-muted-foreground p-1">
-          CSV format has better compatibility with most tools, but results in larger files and may be limited depending
-          on how much data you have.
+          O formato CSV oferece maior compatibilidade com a maioria das ferramentas, mas gera arquivos maiores dependendo do volume de dados.
         </span>
       )}
       {props.value === "parquet" && (
         <span className="text-muted-foreground p-1">
-          Parquet has much better compression and is more efficient for large datasets, but may need to be converted to
-          other format before using it with some tools.
+          O formato Parquet oferece excelente compressão e alta eficiência para grandes volumes de telemetria.
         </span>
       )}
     </div>

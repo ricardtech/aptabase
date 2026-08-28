@@ -5,12 +5,12 @@ export function BetaNotice() {
   return (
     <Alert variant="warning" className="my-4">
       <IconFlask className="h-4 w-4" />
-      <AlertTitle>Error reporting is in beta</AlertTitle>
+      <AlertTitle>O relatório de erros está em versão beta</AlertTitle>
       <AlertDescription className="text-muted-foreground">
         <p>
-          SDK support is still rolling out. Want it in your SDK?{" "}
+          O suporte no SDK está sendo lançado gradualmente. Deseja no seu SDK?{" "}
           <a target="_blank" className="underline hover:text-foreground" href="https://github.com/aptabase">
-            We welcome contributions on GitHub
+            Contribuições são bem-vindas no GitHub
           </a>
           .
         </p>

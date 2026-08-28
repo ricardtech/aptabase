@@ -19,10 +19,10 @@ export function Component() {
   }, []);
 
   return (
-    <Page title="User Sessions">
+    <Page title="Usuários e Sessões">
       {buildMode === "debug" && <DebugModeBanner />}
-      <div className="flex justify-between items-center">
-        <PageHeading title="User Sessions" subtitle="Historical list of sessions" />
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+        <PageHeading title="Usuários e Sessões" subtitle="Histórico de sessões de usuários" />
         <div className="flex items-center">
           <BuildModeSelector />
         </div>

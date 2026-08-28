@@ -38,7 +38,7 @@ export function EventNameFilterDropdown(props: Props) {
           onValueChange={setSelectedEvent}
           onRemove={props.onRemove}
           data={data}
-          placeholder="Select Event"
+          placeholder="Selecionar Evento"
           className={props.className}
         />
       )}

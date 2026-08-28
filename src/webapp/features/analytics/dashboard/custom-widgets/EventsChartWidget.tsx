@@ -179,7 +179,7 @@ export function EventsChartWidget(props: Props) {
       <div className="flex flex-col gap-2">
         <Button variant="outline" className="w-full" onClick={defineChartClick}>
           <IconWand className="mr-2 h-4 w-4" />
-          Create a custom chart
+          Criar gráfico personalizado
         </Button>
       </div>
     );

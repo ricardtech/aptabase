@@ -11,11 +11,11 @@ export function Component() {
   if (!app) return <Navigate to="/" />;
 
   return (
-    <Page title="Error Logs">
+    <Page title="Erros e Falhas">
       <div className="flex justify-between items-center">
         <PageHeading
           title="Erros e Falhas"
-          subtitle="Track and debug crashes and errors in your app"
+          subtitle="Rastreie e depure erros, falhas e exceções do seu aplicativo"
         />
       </div>
       <BetaNotice />

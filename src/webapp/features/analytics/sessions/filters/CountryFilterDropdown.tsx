@@ -28,7 +28,7 @@ export function CountryFilterDropdown(props: Props) {
           value={selectedCountry}
           onValueChange={setSelectedCountry}
           data={data}
-          placeholder="Select Country"
+          placeholder="Selecionar País"
         />
       )}
     </FilterDropdownQuery>

@@ -28,13 +28,13 @@ const AppsContext = createContext<AppsContextType | undefined>(undefined);
 
 export function AppsProvider(props: Props) {
   const location = useLocation();
-  const [buildMode, setBuildMode] = useLocalStorage<BuildMode>("buildmode", "debug");
+  const [buildMode, setBuildMode] = useLocalStorage<BuildMode>("buildmode", "release");
 
   const { isLoading, isError, data, refetch } = useQuery({ queryKey: ["apps"], queryFn: listApps });
 
   const createAppAndRefresh = async (name: string): Promise<Application> => {
     const app = await createApp(name);
-    toast(`${name} app was created. 🎉`);
+    toast(`O aplicativo ${name} foi criado. 🎉`);
     await refetch();
     return app;
   };
@@ -46,7 +46,7 @@ export function AppsProvider(props: Props) {
 
   const updateAppAndRefresh = async (appId: string, name: string, icon: string): Promise<Application> => {
     const app = await updateApp(appId, name, icon);
-    toast(`${name} app was successfully updated.`);
+    toast(`O aplicativo ${name} foi atualizado com sucesso.`);
     await refetch();
     return app;
   };
@@ -58,40 +58,41 @@ export function AppsProvider(props: Props) {
   if (isLoading) return <LoadingState size="lg" color="primary" delay={0} />;
   if (isError) return <ErrorState />;
 
-  if (data?.length === 0 && location.pathname !== "/") {
-    return <Navigate to="/" />;
-  }
+  const switchBuildMode = (mode: BuildMode) => {
+    setBuildMode(mode);
+  };
 
   return (
     <AppsContext.Provider
       value={{
-        apps: data ?? [],
+        apps: data || [],
         buildMode,
-        switchBuildMode: setBuildMode,
         createApp: createAppAndRefresh,
         deleteApp: deleteAppAndRefresh,
         updateApp: updateAppAndRefresh,
         refetchApps,
+        switchBuildMode,
       }}
     >
-      {props.children}
       <OwnershipTransferStartupCheck />
+      {props.children}
     </AppsContext.Provider>
   );
 }
 
-export function useApps(): AppsContextType {
-  const ctx = useContext(AppsContext);
-  if (!ctx) {
+export function useApps() {
+  const context = useContext(AppsContext);
+  if (!context) {
     throw new Error("useApps must be used within a AppsProvider");
   }
-
-  return ctx;
+  return context;
 }
 
-export function useCurrentApp(): Application | undefined {
+export function useCurrentApp() {
   const { apps } = useApps();
-  let { id } = useParams();
+  const { appId } = useParams();
 
-  return apps.find((app) => app.id === id);
+  if (!appId) return undefined;
+
+  return apps.find((app) => app.id === appId);
 }

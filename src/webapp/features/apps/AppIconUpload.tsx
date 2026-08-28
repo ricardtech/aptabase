@@ -19,12 +19,12 @@ async function getImageDetails(file: File): Promise<ImageDetails> {
       image!.src = reader.result as string;
       image.onload = function () {
         if (image.width !== image.height) {
-          reject("Icon must have a 1:1 aspect ratio.");
+          reject("O ícone deve ter proporção quadrada (1:1).");
           return;
         }
 
         if (image.width < 100 || image.height < 100) {
-          reject("Icon must be at least 100x100.");
+          reject("O ícone deve ter no mínimo 100x100 pixels.");
           return;
         }
 
@@ -36,11 +36,11 @@ async function getImageDetails(file: File): Promise<ImageDetails> {
         });
       };
       image.onerror = function () {
-        reject("Invalid image file, try a different one.");
+        reject("Arquivo de imagem inválido.");
       };
     };
     reader.onerror = function (error) {
-      reject("Invalid image file, try a different one.");
+      reject("Erro ao carregar a imagem.");
     };
   });
 }
@@ -67,12 +67,12 @@ export function AppIconUpload(props: Props) {
     if (!file) return;
 
     if (file.size > 1024 * 50) {
-      setError("Icon size must be lower than 50KB.");
+      setError("O tamanho do ícone deve ser menor que 50KB.");
       return;
     }
 
     if (file.type !== "image/png") {
-      setError("Icon must be a PNG file.");
+      setError("O ícone deve ser um arquivo PNG.");
       return;
     }
 
@@ -89,7 +89,7 @@ export function AppIconUpload(props: Props) {
   return (
     <div>
       <label className="text-sm mb-2 block font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-        Icon
+        Ícone
       </label>
       <div className="flex gap-2 items-center">
         {imgSrc ? (
@@ -103,7 +103,7 @@ export function AppIconUpload(props: Props) {
         <input ref={inputRef} onChange={handleFileChanged} type="file" className="hidden" />
         <div>
           <Button variant="ghost" onClick={handleClick} type="button">
-            Change
+            Alterar
           </Button>
         </div>
       </div>

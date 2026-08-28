@@ -24,18 +24,18 @@ type MonthlyUsage = {
 
 function getMonthName(number: number) {
   const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
   ];
   return months[number - 1];
 }
@@ -59,37 +59,40 @@ function groupByYear(usage: MonthlyUsage[]) {
 }
 
 export function ExportPageBody(props: Props) {
-  const [format, setFormat] = useState("csv");
+  const [format, setFormat] = useState<string>("csv");
 
-  const { isLoading, isError, data } = useQuery({
-    queryKey: ["monthly-usage", props.app.id, props.buildMode],
+  const {
+    isLoading,
+    isError,
+    data: usage,
+  } = useQuery({
+    queryKey: ["export-usage", props.app.id, props.buildMode],
     queryFn: () => api.get<MonthlyUsage[]>(`/_export/usage`, { appId: props.app.id, buildMode: props.buildMode }),
   });
 
-  if (isLoading) return <LoadingState size="lg" color="primary" delay={0} />;
-  if (isError || !data) return <ErrorState />;
+  if (isLoading) return <LoadingState />;
+  if (isError) return <ErrorState />;
 
-  if (data.length === 0) {
-    return (
-      <div className="h-40">
-        <EmptyState />
-      </div>
-    );
-  }
-
-  const byYear = groupByYear(data);
+  const grouped = groupByYear(usage || []);
 
   return (
-    <div className="space-y-10">
-      <div className="space-y-4">
-        <FormatPicker value={format} onChange={setFormat} />
-        {byYear.map((item) => (
-          <YearlyGrid key={item.year} app={props.app} buildMode={props.buildMode} format={format} {...item} />
-        ))}
-      </div>
+    <div className="space-y-8">
+      {props.buildMode === "debug" && <DevelopmentNotice />}
+
+      <FormatPicker value={format} onChange={setFormat} />
+
+      {grouped.map((group) => (
+        <YearlyGrid
+          key={group.year}
+          app={props.app}
+          buildMode={props.buildMode}
+          year={group.year}
+          months={group.months}
+          format={format}
+        />
+      ))}
 
       <ToolsList />
-      <DevelopmentNotice />
     </div>
   );
 }

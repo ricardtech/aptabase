@@ -14,10 +14,10 @@ export function VersionWidget(props: Props) {
           {...data}
           id="appversions"
           key="appversions"
-          title="App Versions"
+          title="Versões do App"
           searchParamKey="appVersion"
           defaultFormat="percentage"
-          valueLabel="Sessions"
+          valueLabel="Sessões"
         />
       )}
     </TopNDataContainer>

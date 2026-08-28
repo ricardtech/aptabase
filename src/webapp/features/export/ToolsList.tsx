@@ -32,7 +32,7 @@ function Tool(props: ToolProps) {
         <props.icon className={twMerge("h-6 w-6 mt-1", props.iconClassName)} />
       )}
       <div className="flex flex-col ml-4">
-        <span>{props.name}</span>
+        <span className="font-medium">{props.name}</span>
         <p className="text-sm text-muted-foreground">{props.description}</p>
       </div>
     </a>
@@ -42,34 +42,34 @@ function Tool(props: ToolProps) {
 export function ToolsList() {
   return (
     <div>
-      <p className="text-sm mb-2">Here is a list of some free tools you can use to query your data.</p>
+      <p className="text-sm mb-2 font-medium">Aqui está uma lista de ferramentas que você pode usar para consultar seus dados:</p>
       <div className="space-y-2 max-w-3xl">
         <Tool
           icon="excel"
           name="Microsoft Excel"
-          href="https://www.microsoft.com/en-ie/microsoft-365"
-          description="The most popular spreadsheet works great with Aptabase CSV files. Open it on Excel and start exploring your data with Pivot Tables and Charts."
+          href="https://www.microsoft.com/pt-br/microsoft-365"
+          description="A planilha mais popular do mundo funciona muito bem com arquivos CSV do Aptabase. Abra no Excel e explore seus dados com tabelas dinâmicas e gráficos."
         />
 
         <Tool
           icon="powerbi"
           name="Microsoft Power BI"
-          href="https://powerbi.microsoft.com/en-us/"
-          description="Power BI is another alternative worth considering. It's a powerful tool for data visualization and analysis. It takes longer to learn than Excel, but it's also a lot more powerful."
+          href="https://powerbi.microsoft.com/pt-br/"
+          description="O Power BI é uma ferramenta poderosa para visualização e análise avançada de dados de telemetria."
         />
 
         <Tool
           icon="jupyter"
-          name="JupyterLab and Jupyter Notebook"
+          name="JupyterLab e Jupyter Notebook"
           href="https://jupyter.org/"
-          description="Jupyter is a flexible tool for data analysis and visualization with support for over 40 programming languages, including Python and R."
+          description="O Jupyter é uma ferramenta flexível para análise e ciência de dados com suporte a Python, R e visualizações customizadas."
         />
 
         <Tool
           icon={IconCode}
-          name="Build your own pipeline"
+          name="Crie sua própria pipeline"
           href="https://google.com"
-          description="CSV is a widely supported format that most visualization tools and programming languages support natively. You can use any tool you like to explore your data."
+          description="O formato CSV é amplamente suportado nativamente pela maioria das linguagens de programação e bancos de dados."
         />
       </div>
     </div>

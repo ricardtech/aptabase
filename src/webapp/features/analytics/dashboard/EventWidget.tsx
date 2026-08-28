@@ -23,10 +23,10 @@ export function EventWidget(props: Props) {
           {...data}
           id="events"
           key="events"
-          title="Events"
+          title="Eventos"
           searchParamKey="eventName"
           defaultFormat="absolute"
-          valueLabel="Count"
+          valueLabel="Total"
         />
       )}
     </TopNDataContainer>
