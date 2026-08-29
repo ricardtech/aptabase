@@ -82,6 +82,19 @@ public class EventsController : Controller
             userAgent = $"{body.SystemProps.OSName}/{body.SystemProps.OSVersion} {body.SystemProps.EngineName}/{body.SystemProps.EngineVersion} {body.SystemProps.Locale}";
 
         var clientIp = HttpContext.ResolveClientIpAddress();
+        if (body.Props != null && body.Props.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+        {
+            if (body.Props.RootElement.TryGetProperty("IP do Cliente", out var customIpProp) || 
+                body.Props.RootElement.TryGetProperty("IP", out customIpProp))
+            {
+                var customIpStr = customIpProp.GetString()?.Trim() ?? "";
+                if (!string.IsNullOrEmpty(customIpStr) && !customIpStr.StartsWith("127.") && !customIpStr.StartsWith("::1"))
+                {
+                    clientIp = customIpStr;
+                }
+            }
+        }
+
         var location = _geoIP.GetClientLocation(HttpContext);
         var trackingEvent = NewTrackingEvent(app.Id, location.CountryCode, location.RegionName, clientIp, userAgent ?? "", body);
         _buffer.Add(ref trackingEvent);
@@ -130,7 +143,22 @@ public class EventsController : Controller
 
         var clientIp = HttpContext.ResolveClientIpAddress();
         var location = _geoIP.GetClientLocation(HttpContext);
-        var trackingEvents = validEvents.Select(e => NewTrackingEvent(app.Id, location.CountryCode, location.RegionName, clientIp, userAgent ?? "", e));
+        var trackingEvents = validEvents.Select(e => {
+            var eventIp = clientIp;
+            if (e.Props != null && e.Props.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+            {
+                if (e.Props.RootElement.TryGetProperty("IP do Cliente", out var customIpProp) || 
+                    e.Props.RootElement.TryGetProperty("IP", out customIpProp))
+                {
+                    var customIpStr = customIpProp.GetString()?.Trim() ?? "";
+                    if (!string.IsNullOrEmpty(customIpStr) && !customIpStr.StartsWith("127.") && !customIpStr.StartsWith("::1"))
+                    {
+                        eventIp = customIpStr;
+                    }
+                }
+            }
+            return NewTrackingEvent(app.Id, location.CountryCode, location.RegionName, eventIp, userAgent ?? "", e);
+        });
 
         _buffer.AddRange(ref trackingEvents);
 
