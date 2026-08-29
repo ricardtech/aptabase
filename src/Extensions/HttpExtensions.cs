@@ -5,13 +5,13 @@ public static class HttpContextExtensions
     public static string ResolveClientIpAddress(this HttpContext httpContext)
     {
         if (httpContext.Request.Headers.TryGetValue("Cf-Connecting-Ip", out var cfIp) && !string.IsNullOrEmpty(cfIp))
-            return cfIp.ToString();
+            return cfIp.ToString().Split(',')[0].Trim();
 
         if (httpContext.Request.Headers.TryGetValue("X-Real-Ip", out var ip) && !string.IsNullOrEmpty(ip))
-            return ip.ToString();
+            return ip.ToString().Split(',')[0].Trim();
 
         if (httpContext.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedIp) && !string.IsNullOrEmpty(forwardedIp))
-            return forwardedIp.ToString();
+            return forwardedIp.ToString().Split(',')[0].Trim();
 
         var cfViewerAddress = httpContext.Request.Headers["CloudFront-Viewer-Address"];
         if (cfViewerAddress.Count > 0)
