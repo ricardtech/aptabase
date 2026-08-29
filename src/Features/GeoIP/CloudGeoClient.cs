@@ -22,11 +22,16 @@ public class CloudGeoClient : GeoIPClient
         var countryCode = GetHeader(httpContext, "cdn-requestcountrycode", "CloudFront-Viewer-Country", "CF-IPCountry");
         var regionCode = GetHeader(httpContext, "cdn-requeststatecode", "Cloudfront-Viewer-Country-Region");
         var regionName = _regions.TryGetValue($"{countryCode}-{regionCode}", out var name) ? name : "";
+        var cityName = httpContext.Request.Headers["CF-IPCity"].ToString() ?? "";
+
+        var locationParts = new List<string>();
+        if (!string.IsNullOrEmpty(cityName)) locationParts.Add(cityName);
+        if (!string.IsNullOrEmpty(regionName)) locationParts.Add(regionName);
 
         return new GeoLocation
         {
             CountryCode = countryCode ?? "",
-            RegionName = regionName ?? ""
+            RegionName = string.Join(" · ", locationParts)
         };
     }
 

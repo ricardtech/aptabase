@@ -19,10 +19,23 @@ public class DatabaseGeoClient : GeoIPClient
         if (string.IsNullOrEmpty(ip))
             return GeoLocation.Empty;
 
-        return _db.TryCity(ip, out var city) ? new GeoLocation
+        if (_db.TryCity(ip, out var city) && city != null)
         {
-            CountryCode = city?.Country?.IsoCode?.ToUpper() ?? "",
-            RegionName = city?.MostSpecificSubdivision.Name ?? ""
-        } : GeoLocation.Empty;
+            var country = city.Country?.IsoCode?.ToUpper() ?? "";
+            var state = city.MostSpecificSubdivision?.Name ?? "";
+            var cityName = city.City?.Name ?? "";
+
+            var locationParts = new List<string>();
+            if (!string.IsNullOrEmpty(cityName)) locationParts.Add(cityName);
+            if (!string.IsNullOrEmpty(state)) locationParts.Add(state);
+
+            return new GeoLocation
+            {
+                CountryCode = country,
+                RegionName = string.Join(" · ", locationParts)
+            };
+        }
+
+        return GeoLocation.Empty;
     }
 }

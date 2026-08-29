@@ -28,9 +28,12 @@ export function ConsoleLayout() {
           <div className="p-3 flex flex-grow flex-col mt-2">
             <NavMenu />
           </div>
-          <div className="p-3 space-y-1 border-t">
+          <div className="p-3 space-y-2 border-t">
             <TrialReminder />
             <UserMenu user={auth.user} />
+            <div className="text-[11px] text-muted-foreground/60 text-center pt-1 font-mono">
+              &copy; 2026 Ricard Tech &middot; v1.9.3
+            </div>
           </div>
         </div>
       </div>
@@ -49,8 +52,13 @@ export function ConsoleLayout() {
           </div>
         </header>
 
-        <main className="flex-1 p-3 sm:p-6 lg:p-8 mx-auto w-full max-w-6xl overflow-x-hidden">
-          <Outlet />
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 mx-auto w-full max-w-6xl overflow-x-hidden flex flex-col justify-between">
+          <div>
+            <Outlet />
+          </div>
+          <footer className="py-6 text-center text-xs text-muted-foreground/50 border-t mt-12">
+            &copy; 2026 Ricard Tech &middot; Telemetria &amp; M&eacute;tricas &middot; <strong className="text-foreground/70">v1.9.3</strong>
+          </footer>
         </main>
       </div>
     </div>
