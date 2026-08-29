@@ -5,6 +5,7 @@ import { useAuthState } from "../features/auth";
 import { MobileSidebar, NavMenu, UserMenu } from "../features/navigation";
 import { useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { APP_VERSION, COMPANY_NAME, COPYRIGHT_YEAR } from "../version";
 
 export function ConsoleLayout() {
   const auth = useAuthState();
@@ -32,7 +33,7 @@ export function ConsoleLayout() {
             <TrialReminder />
             <UserMenu user={auth.user} />
             <div className="text-[11px] text-muted-foreground/60 text-center pt-1 font-mono">
-              &copy; 2026 Ricard Tech &middot; v1.9.3
+              &copy; {COPYRIGHT_YEAR} {COMPANY_NAME} &middot; {APP_VERSION}
             </div>
           </div>
         </div>
@@ -57,7 +58,7 @@ export function ConsoleLayout() {
             <Outlet />
           </div>
           <footer className="py-6 text-center text-xs text-muted-foreground/50 border-t mt-12">
-            &copy; 2026 Ricard Tech &middot; Telemetria &amp; M&eacute;tricas &middot; <strong className="text-foreground/70">v1.9.3</strong>
+            &copy; {COPYRIGHT_YEAR} {COMPANY_NAME} &middot; Telemetria &amp; M&eacute;tricas &middot; <strong className="text-foreground/70">{APP_VERSION}</strong>
           </footer>
         </main>
       </div>
