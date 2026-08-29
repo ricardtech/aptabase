@@ -145,6 +145,11 @@ public class EventsController : Controller
     private static TrackingEvent NewTrackingEvent(string appId, string countryCode, string regionName, string clientIp, string userAgent, EventBody body)
     {
         var (stringProps, numericProps) = body.SplitProps();
+        if (!string.IsNullOrEmpty(clientIp) && !stringProps.ContainsKey("IP do Cliente") && !stringProps.ContainsKey("IP"))
+        {
+            stringProps["IP do Cliente"] = clientIp;
+        }
+
         return new TrackingEvent
         {
             ClientIpAddress = clientIp,
