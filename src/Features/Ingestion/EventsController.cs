@@ -52,23 +52,32 @@ public class EventsController : Controller
         if (app.IsLocked) 
             return BadRequest($"Owner account is locked.");
 
-        // We never expect the Web SDK to send the OS name, so it's safe to assume that if it's missing the event is coming from a browser
-        var isWeb = string.IsNullOrEmpty(body.SystemProps.OSName);
+        // Determine OS and Browser
+        var isMissingOS = string.IsNullOrWhiteSpace(body.SystemProps.OSName) || 
+                          body.SystemProps.OSName.Equals("Web", StringComparison.OrdinalIgnoreCase) || 
+                          (body.SystemProps.OSName.Equals("Linux", StringComparison.OrdinalIgnoreCase) && (string.IsNullOrWhiteSpace(body.SystemProps.OSVersion) || body.SystemProps.OSVersion.Equals("1.0")));
 
-        // For web events, we need to parse the user agent to get the OS name and version
-        if (isWeb && !string.IsNullOrEmpty(userAgent))
+        if (isMissingOS && !string.IsNullOrEmpty(userAgent))
         {
             var (osName, osVersion) = UserAgentParser.ParseOperatingSystem(userAgent);
-            body.SystemProps.OSName = osName;
-            body.SystemProps.OSVersion = osVersion;
+            if (!string.IsNullOrEmpty(osName))
+            {
+                body.SystemProps.OSName = osName;
+                if (!string.IsNullOrEmpty(osVersion))
+                    body.SystemProps.OSVersion = osVersion;
+            }
 
             var (engineName, engineVersion) = UserAgentParser.ParseBrowser(userAgent);
-            body.SystemProps.EngineName = engineName;
-            body.SystemProps.EngineVersion = engineVersion;
+            if (!string.IsNullOrEmpty(engineName))
+            {
+                body.SystemProps.EngineName = engineName;
+                body.SystemProps.EngineVersion = engineVersion;
+            }
         }
 
+        var isWeb = string.IsNullOrEmpty(body.SystemProps.OSName) || body.SystemProps.OSName.Equals("Web", StringComparison.OrdinalIgnoreCase);
+
         // We can't rely on User-Agent header sent by the SDK for non-web events, so we fabricate one
-        // This can be removed when this issue is implemented: https://github.com/aptabase/aptabase/issues/23
         if (!isWeb)
             userAgent = $"{body.SystemProps.OSName}/{body.SystemProps.OSVersion} {body.SystemProps.EngineName}/{body.SystemProps.EngineVersion} {body.SystemProps.Locale}";
 
