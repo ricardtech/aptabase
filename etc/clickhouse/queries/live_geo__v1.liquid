@@ -3,7 +3,7 @@ country_code as CountryCode,
 region_name as RegionName
 FROM (
 SELECT session_id,
- min(min_timestamp) AS timestamp,
+ max(max_timestamp) AS timestamp,
  any(user_id) AS user_id,
  any(country_code) AS country_code,
  any(region_name) AS region_name

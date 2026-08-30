@@ -19,18 +19,18 @@ AND os_name = '{{os_name}}'
 AND app_version = '{{app_version}}'
 {% endif %}
 {% if date_to %}
-AND (min_timestamp < '{{date_to}}' OR (min_timestamp = '{{date_to}}' AND session_id < '{{session_id}}'))
+AND (max_timestamp < '{{date_to}}' OR (max_timestamp = '{{date_to}}' AND session_id < '{{session_id}}'))
 {% endif %}
 {% if date_from %}
-AND (min_timestamp > '{{date_from}}' OR (min_timestamp = '{{date_from}}' AND session_id > '{{session_id}}'))
+AND (max_timestamp > '{{date_from}}' OR (max_timestamp = '{{date_from}}' AND session_id > '{{session_id}}'))
 {% endif %}
 GROUP BY session_id
 {% if event_name %}
 HAVING hasAny(groupArrayMerge(events_name), ['{{event_name}}'])
 {% endif %}
 {% if date_from %}
-ORDER BY StartedAt ASC, Id ASC
+ORDER BY max(max_timestamp) ASC, Id ASC
 {% else %}
-ORDER BY StartedAt DESC, Id DESC
+ORDER BY max(max_timestamp) DESC, Id DESC
 {% endif %}
 LIMIT 10

@@ -10,6 +10,6 @@ SELECT session_id as Id,
 FROM sessions_live_v1
 WHERE app_id = '{{app_id}}'
 GROUP BY session_id
-HAVING StartedAt >= now() - INTERVAL 24 HOUR
-ORDER BY StartedAt DESC
+HAVING max(max_timestamp) >= now() - INTERVAL 2 HOUR
+ORDER BY max(max_timestamp) DESC
 LIMIT 12
