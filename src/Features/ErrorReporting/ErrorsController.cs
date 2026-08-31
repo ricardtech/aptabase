@@ -1,12 +1,14 @@
 using Aptabase.Data;
 using Aptabase.Features.Authentication;
 using Aptabase.Features.ErrorReporting.Buffer;
+using Aptabase.Features.GeoIP;
 using Aptabase.Features.Ingestion;
 using Aptabase.Features.Stats;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
+using System.Text.Json;
 
 namespace Aptabase.Features.ErrorReporting;
 
@@ -23,6 +25,7 @@ public class ErrorsController : ControllerBase
     private readonly IIngestionCache _cache;
     private readonly IPiiSanitizer _piiSanitizer;
     private readonly IErrorQueryClient _errorQueryClient;
+    private readonly GeoIPClient _geoIP;
     private readonly IDbContext _db;
     private readonly EnvSettings _env;
     private readonly IMemoryCache _memoryCache;
@@ -33,6 +36,7 @@ public class ErrorsController : ControllerBase
         IIngestionCache cache,
         IPiiSanitizer piiSanitizer,
         IErrorQueryClient errorQueryClient,
+        GeoIPClient geoIP,
         IDbContext db,
         EnvSettings env,
         IMemoryCache memoryCache,
@@ -42,6 +46,7 @@ public class ErrorsController : ControllerBase
         _cache = cache;
         _piiSanitizer = piiSanitizer;
         _errorQueryClient = errorQueryClient;
+        _geoIP = geoIP;
         _db = db;
         _env = env;
         _memoryCache = memoryCache;
@@ -126,13 +131,66 @@ public class ErrorsController : ControllerBase
         var sanitizedErrorMessage = _piiSanitizer.Sanitize(body.ErrorMessage);
         var sanitizedStackTrace = _piiSanitizer.Sanitize(body.StackTrace);
 
+        // Extract client IP and resolve Location & ISP / ASN
+        var clientIp = HttpContext.ResolveClientIpAddress();
+        var metadataProps = new Dictionary<string, string>();
+        
+        var metaDoc = body.Metadata ?? body.Props;
+        if (metaDoc != null && metaDoc.RootElement.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var prop in metaDoc.RootElement.EnumerateObject())
+            {
+                var val = prop.Value.ToString();
+                if (!string.IsNullOrWhiteSpace(val))
+                {
+                    metadataProps[prop.Name] = val;
+                }
+            }
+
+            if (metadataProps.TryGetValue("IP do Cliente", out var customIp) || metadataProps.TryGetValue("IP", out customIp))
+            {
+                if (!string.IsNullOrEmpty(customIp) && !customIp.StartsWith("127.") && !customIp.StartsWith("::1"))
+                {
+                    clientIp = customIp;
+                }
+            }
+        }
+
+        var loc = _geoIP.GetClientLocation(HttpContext, clientIp);
+        if (!string.IsNullOrEmpty(loc.IspName) && !metadataProps.ContainsKey("Provedor") && !metadataProps.ContainsKey("ISP"))
+        {
+            metadataProps["Provedor"] = !string.IsNullOrEmpty(loc.Asn) ? $"{loc.IspName} ({loc.Asn})" : loc.IspName;
+        }
+        if (!string.IsNullOrEmpty(loc.RegionName) && !metadataProps.ContainsKey("Localização"))
+        {
+            var locStr = !string.IsNullOrEmpty(loc.CountryCode) ? $"{loc.RegionName} · {loc.CountryCode}" : loc.RegionName;
+            metadataProps["Localização"] = locStr;
+        }
+        if (!string.IsNullOrEmpty(clientIp) && !metadataProps.ContainsKey("IP do Cliente"))
+        {
+            metadataProps["IP do Cliente"] = clientIp;
+        }
+
+        // Format structured details into sanitized message if metadata is present
+        var detailLines = new List<string>();
+        foreach (var kv in metadataProps)
+        {
+            detailLines.Add($"• {kv.Key}: {kv.Value}");
+        }
+
+        var finalErrorMessage = sanitizedErrorMessage;
+        if (detailLines.Count > 0 && !sanitizedErrorMessage.Contains("--- Diagnóstico ---"))
+        {
+            finalErrorMessage = $"{sanitizedErrorMessage}\n\n--- Diagnóstico do Cliente ---\n" + string.Join("\n", detailLines);
+        }
+
         // Create tracking error
         var trackingError = new TrackingError
         {
             ErrorId = errorId,
             AppId = app.Id,
             Timestamp = body.Timestamp!.Value,
-            ErrorMessage = sanitizedErrorMessage,
+            ErrorMessage = finalErrorMessage,
             ErrorType = body.ErrorType!,
             StackTrace = sanitizedStackTrace,
             Platform = body.Platform,

@@ -2,11 +2,11 @@ SELECT session_id as Id,
        min(min_timestamp) as StartedAt,
        max(max_timestamp) - min(min_timestamp) as Duration,
        countMerge(events_count) as EventsCount,
-       any(app_version) as AppVersion,
-       any(country_code) as CountryCode,
-       any(region_name) as RegionName,
-       any(os_name) as OsName,
-       any(os_version) as OsVersion
+       argMaxMerge(app_version) as AppVersion,
+       argMaxMerge(country_code) as CountryCode,
+       argMaxMerge(region_name) as RegionName,
+       argMaxMerge(os_name) as OsName,
+       argMaxMerge(os_version) as OsVersion
 FROM sessions_live_v1
 WHERE app_id = '{{app_id}}'
 GROUP BY session_id

@@ -17,7 +17,7 @@ public class CloudGeoClient : GeoIPClient
         _regions = regions;
     }
 
-    public override GeoLocation GetClientLocation(HttpContext httpContext)
+    public override GeoLocation GetClientLocation(HttpContext httpContext, string? clientIp = null)
     {
         var countryCode = GetHeader(httpContext, "cdn-requestcountrycode", "CloudFront-Viewer-Country", "CF-IPCountry");
         var regionCode = GetHeader(httpContext, "cdn-requeststatecode", "Cloudfront-Viewer-Country-Region");

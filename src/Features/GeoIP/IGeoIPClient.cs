@@ -7,11 +7,15 @@ public readonly struct GeoLocation
 {
     public readonly string CountryCode { get; init; }
     public readonly string RegionName { get; init; }
+    public readonly string IspName { get; init; }
+    public readonly string Asn { get; init; }
 
     public static GeoLocation Empty => new()
     {
         CountryCode = "",
-        RegionName = ""
+        RegionName = "",
+        IspName = "",
+        Asn = ""
     };
 }
 
@@ -25,7 +29,7 @@ public readonly struct Coordinates
 
 public abstract class GeoIPClient
 {
-    public abstract GeoLocation GetClientLocation(HttpContext httpContext);
+    public abstract GeoLocation GetClientLocation(HttpContext httpContext, string? clientIp = null);
 
     private readonly Dictionary<string, Dictionary<string, Coordinates>> _coordinates;
 

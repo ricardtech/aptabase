@@ -95,8 +95,24 @@ public class EventsController : Controller
             }
         }
 
-        var location = _geoIP.GetClientLocation(HttpContext);
-        var trackingEvent = NewTrackingEvent(app.Id, location.CountryCode, location.RegionName, clientIp, userAgent ?? "", body);
+        var location = _geoIP.GetClientLocation(HttpContext, clientIp);
+        if (body.Props != null && body.Props.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+        {
+            var customCity = body.Props.RootElement.TryGetProperty("Cidade", out var cityProp) ? cityProp.GetString()?.Trim() : "";
+            var customRegion = body.Props.RootElement.TryGetProperty("Estado", out var regProp) ? regProp.GetString()?.Trim() : "";
+            var customCountry = body.Props.RootElement.TryGetProperty("País", out var countryProp) ? countryProp.GetString()?.Trim()?.ToUpper() : "";
+
+            if (!string.IsNullOrEmpty(customCity))
+            {
+                var parts = new List<string> { customCity };
+                if (!string.IsNullOrEmpty(customRegion)) parts.Add(customRegion);
+                location = new Aptabase.Features.GeoIP.GeoLocation
+                {
+                    CountryCode = !string.IsNullOrEmpty(customCountry) ? customCountry : (string.IsNullOrEmpty(location.CountryCode) ? "BR" : location.CountryCode),
+                    RegionName = string.Join(" · ", parts)
+                };
+            }
+        }        var trackingEvent = NewTrackingEvent(app.Id, location.CountryCode, location.RegionName, location.IspName, location.Asn, clientIp, userAgent ?? "", body);
         _buffer.Add(ref trackingEvent);
 
         return Ok(new { });
@@ -141,10 +157,9 @@ public class EventsController : Controller
         if (app.IsLocked) 
             return BadRequest($"Owner account is locked.");
 
-        var clientIp = HttpContext.ResolveClientIpAddress();
-        var location = _geoIP.GetClientLocation(HttpContext);
+        var defaultClientIp = HttpContext.ResolveClientIpAddress();
         var trackingEvents = validEvents.Select(e => {
-            var eventIp = clientIp;
+            var eventIp = defaultClientIp;
             if (e.Props != null && e.Props.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object)
             {
                 if (e.Props.RootElement.TryGetProperty("IP do Cliente", out var customIpProp) || 
@@ -157,14 +172,33 @@ public class EventsController : Controller
                     }
                 }
             }
-            return NewTrackingEvent(app.Id, location.CountryCode, location.RegionName, eventIp, userAgent ?? "", e);
+            var location = _geoIP.GetClientLocation(HttpContext, eventIp);
+            if (e.Props != null && e.Props.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+            {
+                var customCity = e.Props.RootElement.TryGetProperty("Cidade", out var cityProp) ? cityProp.GetString()?.Trim() : "";
+                var customRegion = e.Props.RootElement.TryGetProperty("Estado", out var regProp) ? regProp.GetString()?.Trim() : "";
+                var customCountry = e.Props.RootElement.TryGetProperty("País", out var countryProp) ? countryProp.GetString()?.Trim()?.ToUpper() : "";
+
+                if (!string.IsNullOrEmpty(customCity))
+                {
+                    var parts = new List<string> { customCity };
+                    if (!string.IsNullOrEmpty(customRegion)) parts.Add(customRegion);
+                    location = new Aptabase.Features.GeoIP.GeoLocation
+                    {
+                        CountryCode = !string.IsNullOrEmpty(customCountry) ? customCountry : (string.IsNullOrEmpty(location.CountryCode) ? "BR" : location.CountryCode),
+                        RegionName = string.Join(" · ", parts),
+                        IspName = location.IspName,
+                        Asn = location.Asn
+                    };
+                }
+            }
+            return NewTrackingEvent(app.Id, location.CountryCode, location.RegionName, location.IspName, location.Asn, eventIp, userAgent ?? "", e);
         });
 
         _buffer.AddRange(ref trackingEvents);
 
         return Ok(new { });
     }
-
 
     [HttpOptions("/api/v0/events")]
     [EnableCors("AllowAny")]
@@ -179,12 +213,17 @@ public class EventsController : Controller
         return NotFound($"Appplication not found with given app key: {appKey}");
     }
 
-    private static TrackingEvent NewTrackingEvent(string appId, string countryCode, string regionName, string clientIp, string userAgent, EventBody body)
+    private static TrackingEvent NewTrackingEvent(string appId, string countryCode, string regionName, string ispName, string asn, string clientIp, string userAgent, EventBody body)
     {
         var (stringProps, numericProps) = body.SplitProps();
         if (!string.IsNullOrEmpty(clientIp) && !stringProps.ContainsKey("IP do Cliente") && !stringProps.ContainsKey("IP"))
         {
             stringProps["IP do Cliente"] = clientIp;
+        }
+
+        if (!string.IsNullOrEmpty(ispName) && !stringProps.ContainsKey("Provedor") && !stringProps.ContainsKey("ISP"))
+        {
+            stringProps["Provedor"] = !string.IsNullOrEmpty(asn) ? $"{ispName} ({asn})" : ispName;
         }
 
         return new TrackingEvent
