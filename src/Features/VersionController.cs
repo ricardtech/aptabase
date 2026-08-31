@@ -14,9 +14,9 @@ public class VersionController : ControllerBase
         {
             // 1. Tenta ler do version.json gerado no wwwroot (produção)
             var wwwrootVersion = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "version.json");
-            if (File.Exists(wwwrootVersion))
+            if (System.IO.File.Exists(wwwrootVersion))
             {
-                var content = File.ReadAllText(wwwrootVersion);
+                var content = System.IO.File.ReadAllText(wwwrootVersion);
                 var match = Regex.Match(content, @"""version""\s*:\s*""([^""]+)""");
                 if (match.Success)
                 {
@@ -33,9 +33,9 @@ public class VersionController : ControllerBase
 
             foreach (var p in paths)
             {
-                if (File.Exists(p))
+                if (System.IO.File.Exists(p))
                 {
-                    var content = File.ReadAllText(p);
+                    var content = System.IO.File.ReadAllText(p);
                     var match = Regex.Match(content, @"APP_VERSION\s*=\s*""([^""]+)""");
                     if (match.Success)
                     {
