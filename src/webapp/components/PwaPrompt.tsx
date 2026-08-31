@@ -17,7 +17,25 @@ export function PwaPrompt() {
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstall);
 
-    // 2. Detector e Verificador Automático de Atualização do Service Worker
+    // 2. Detector e Verificador Automático via API /api/version
+    const checkApiVersion = async () => {
+      try {
+        const res = await fetch("/api/version?_t=" + Date.now(), { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.version && data.version !== APP_VERSION) {
+            setUpdateAvailable(true);
+          }
+        }
+      } catch {}
+    };
+
+    checkApiVersion();
+    const apiInterval = setInterval(checkApiVersion, 45000);
+    const handleFocus = () => checkApiVersion();
+    window.addEventListener("focus", handleFocus);
+
+    // 3. Detector e Verificador Automático do Service Worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.ready.then((registration) => {
         // Checa imediatamente se já há um worker esperando
@@ -55,6 +73,8 @@ export function PwaPrompt() {
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+      window.removeEventListener("focus", handleFocus);
+      clearInterval(apiInterval);
     };
   }, []);
 

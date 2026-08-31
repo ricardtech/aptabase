@@ -7,13 +7,11 @@ public class AddDataProtectionKeys : Migration
 {
     public override void Up()
     {
-        Create.Table("data_protection_keys")
-            .WithColumn("id").AsString(200).PrimaryKey()
-            .WithColumn("xml").AsString().NotNullable();
+        Execute.Sql("CREATE TABLE IF NOT EXISTS data_protection_keys (id VARCHAR(200) PRIMARY KEY, xml TEXT NOT NULL);");
     }
 
     public override void Down()
     {
-        Delete.Table("data_protection_keys");
+        Execute.Sql("DROP TABLE IF EXISTS data_protection_keys;");
     }
 }

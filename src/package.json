@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "node -e \"import('fs').then(fs => { const m = fs.readFileSync('./webapp/version.ts', 'utf8').match(/APP_VERSION\\s*=\\s*\\\"([^\\\"]+)\\\"/); fs.writeFileSync('./webapp/public/version.json', JSON.stringify({ version: m ? m[1] : 'v2.0.4' })); });\" && tsc && vite build",
     "dev": "vite --clearScreen false",
     "preview": "vite preview"
   },

@@ -1,5 +1,6 @@
 import { TrialReminder } from "@features/billing";
 import { PwaPrompt } from "@components/PwaPrompt";
+import { UpdateNotifier } from "@components/UpdateNotifier";
 import { AppSelector } from "../features/apps";
 import { useAuthState } from "../features/auth";
 import { MobileSidebar, NavMenu, UserMenu } from "../features/navigation";
@@ -17,6 +18,7 @@ export function ConsoleLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <UpdateNotifier />
       <MobileSidebar open={sidebarOpen} onClose={setSidebarOpen} />
       <PwaPrompt />
 
