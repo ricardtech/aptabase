@@ -81,14 +81,29 @@ async function fetchErrors(
 }
 
 function SeverityBadge({ severity }: { severity: string }) {
-  const isFatal = severity.toLowerCase() === "fatal";
+  const s = (severity || "").toLowerCase();
+  const isFatal = s === "fatal";
+  const isWarning = s === "warning" || s === "aviso" || s === "alerta";
+  
+  if (isFatal) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-900/30 text-red-400 border border-red-800/50">
+        Crítico
+      </span>
+    );
+  }
+
+  if (isWarning) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-900/30 text-amber-300 border border-amber-800/50">
+        Atenção
+      </span>
+    );
+  }
+
   return (
-    <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-        isFatal ? "bg-red-900/30 text-red-400 border border-red-800/50" : "bg-yellow-900/30 text-yellow-400 border border-yellow-800/50"
-      }`}
-    >
-      {isFatal ? "Fatal" : "Erro"}
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-900/30 text-yellow-400 border border-yellow-800/50">
+      Erro
     </span>
   );
 }
@@ -226,8 +241,9 @@ export function ErrorsList({ appId }: { appId: string }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas</SelectItem>
-              <SelectItem value="fatal">Fatal</SelectItem>
+              <SelectItem value="fatal">Crítico (Fatal)</SelectItem>
               <SelectItem value="error">Erro</SelectItem>
+              <SelectItem value="warning">Alerta / Atenção</SelectItem>
             </SelectContent>
           </Select>
         </div>

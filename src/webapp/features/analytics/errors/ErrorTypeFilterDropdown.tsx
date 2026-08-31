@@ -61,7 +61,7 @@ export function ErrorTypeFilterDropdown(props: Props) {
         <SelectValue />
       </SelectTrigger>
       <SelectContent className="max-h-[410px] overflow-y-auto">
-        <SelectItem value="all">All Types</SelectItem>
+        <SelectItem value="all">Todos os Tipos</SelectItem>
         {showSelectedFallback && <SelectItem value={props.value}>{props.value}</SelectItem>}
         {items.map((item) => (
           <SelectItem key={item.name} value={item.name}>
@@ -69,7 +69,7 @@ export function ErrorTypeFilterDropdown(props: Props) {
           </SelectItem>
         ))}
         {items.length === 0 && !showSelectedFallback && (
-          <div className="text-muted-foreground py-1.5 pl-8 pr-2 text-sm">No error types in range</div>
+          <div className="text-muted-foreground py-1.5 pl-8 pr-2 text-sm">Nenhum tipo de erro no período</div>
         )}
       </SelectContent>
     </Select>
