@@ -1,6 +1,7 @@
 import { Button } from "@components/Button";
 import { IconDeviceMobile, IconRefresh, IconX, IconSparkles } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { APP_VERSION } from "../version";
 
 export function PwaPrompt() {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
