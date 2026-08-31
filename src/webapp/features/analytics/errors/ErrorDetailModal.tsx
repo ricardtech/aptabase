@@ -63,7 +63,6 @@ export function ErrorDetailModal({ appId, errorId, open, onClose }: ErrorDetailM
   };
 
   const handleClickSessionId = (sessionId: string) => () => {
-    // Get the current location to preserve search params
     const currentLocation = window.location;
 
     navigate(`/${appId}/live/${sessionId}`, {
@@ -76,6 +75,24 @@ export function ErrorDetailModal({ appId, errorId, open, onClose }: ErrorDetailM
     });
   };
 
+  const formatSeverity = (sev?: string) => {
+    if (!sev) return "";
+    const s = sev.toLowerCase();
+    if (s === "fatal") return "Crítico (Fatal)";
+    if (s === "error" || s === "erro") return "Erro";
+    if (s === "warning" || s === "aviso" || s === "alerta") return "Alerta / Atenção";
+    if (s === "info") return "Informativo";
+    return sev;
+  };
+
+  const formatKind = (kind?: string) => {
+    if (!kind) return "";
+    const k = kind.toLowerCase();
+    if (k === "handled" || k === "tratado") return "Tratado pelo App";
+    if (k === "unhandled" || k === "nao_tratado") return "Não Tratado (Crash)";
+    return kind;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -86,70 +103,73 @@ export function ErrorDetailModal({ appId, errorId, open, onClose }: ErrorDetailM
         ) : error ? (
           <>
             <DialogHeader>
-              <DialogTitle>Error Details</DialogTitle>
+              <DialogTitle>Detalhes do Erro</DialogTitle>
               <DialogDescription>{error.errorType}</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6 mt-4">
-              {/* Error Information Section */}
+              {/* Seção de Informações do Erro */}
               <div>
-                <h3 className="text-sm font-semibold mb-3">Error Information</h3>
+                <h3 className="text-sm font-semibold mb-3">Informações do Erro</h3>
                 <div className="space-y-2 text-sm">
                   <div className="grid grid-cols-4 gap-2">
-                    <span className="text-muted-foreground">Timestamp:</span>
-                    <span className="col-span-3">{new Date(error.timestamp).toLocaleString()}</span>
+                    <span className="text-muted-foreground">Data / Hora:</span>
+                    <span className="col-span-3">
+                      {new Date(error.timestamp).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
+                    </span>
                   </div>
                   <div className="grid grid-cols-4 gap-2">
-                    <span className="text-muted-foreground">Error Type:</span>
+                    <span className="text-muted-foreground">Tipo de Erro:</span>
                     <span className="col-span-3 font-medium">{error.errorType}</span>
                   </div>
                   {error.severity && (
                     <div className="grid grid-cols-4 gap-2">
-                      <span className="text-muted-foreground">Severity:</span>
-                      <span className="col-span-3 font-medium capitalize">{error.severity}</span>
+                      <span className="text-muted-foreground">Severidade:</span>
+                      <span className="col-span-3 font-medium">{formatSeverity(error.severity)}</span>
                     </div>
                   )}
                   {error.kind && (
                     <div className="grid grid-cols-4 gap-2">
-                      <span className="text-muted-foreground">Kind:</span>
-                      <span className="col-span-3 capitalize">{error.kind}</span>
+                      <span className="text-muted-foreground">Tratamento:</span>
+                      <span className="col-span-3">{formatKind(error.kind)}</span>
                     </div>
                   )}
                   <div className="grid grid-cols-4 gap-2">
-                    <span className="text-muted-foreground">Message:</span>
-                    <span className="col-span-3">{error.errorMessage}</span>
+                    <span className="text-muted-foreground">Mensagem:</span>
+                    <span className="col-span-3 whitespace-pre-line leading-relaxed">{error.errorMessage}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Device/Platform Section */}
+              {/* Seção de Dispositivo e Plataforma */}
               <div>
-                <h3 className="text-sm font-semibold mb-3">Device & Platform Information</h3>
+                <h3 className="text-sm font-semibold mb-3">Informações do Dispositivo e Plataforma</h3>
                 <div className="space-y-2 text-sm">
                   <div className="grid grid-cols-4 gap-2">
-                    <span className="text-muted-foreground">Platform:</span>
+                    <span className="text-muted-foreground">Plataforma:</span>
                     <span className="col-span-3">{error.platform}</span>
                   </div>
                   <div className="grid grid-cols-4 gap-2">
-                    <span className="text-muted-foreground">OS:</span>
+                    <span className="text-muted-foreground">Sistema Operacional:</span>
                     <span className="col-span-3">
                       {error.osName} {error.osVersion}
                     </span>
                   </div>
                   <div className="grid grid-cols-4 gap-2">
-                    <span className="text-muted-foreground">App Version:</span>
+                    <span className="text-muted-foreground">Versão do App:</span>
                     <span className="col-span-3">{error.appVersion}</span>
                   </div>
                   <div className="grid grid-cols-4 gap-2">
-                    <span className="text-muted-foreground">SDK Version:</span>
+                    <span className="text-muted-foreground">Versão do SDK:</span>
                     <span className="col-span-3">{error.sdkVersion}</span>
                   </div>
                   {error.sessionId && (
                     <div className="grid grid-cols-4 gap-2">
-                      <span className="text-muted-foreground">Session ID:</span>
+                      <span className="text-muted-foreground">ID da Sessão:</span>
                       <button
-                        className="col-span-3 font-mono text-xs text-left"
                         onClick={handleClickSessionId(error.sessionId)}
+                        className="col-span-3 text-left font-mono hover:underline text-primary"
+                        title="Ver histórico desta sessão ao vivo"
                       >
                         {error.sessionId}
                       </button>
@@ -161,26 +181,26 @@ export function ErrorDetailModal({ appId, errorId, open, onClose }: ErrorDetailM
               {/* Stack Trace Section */}
               {error.stackTrace && (
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold">Stack Trace</h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold">Rastreamento da Pilha (Stack Trace)</h3>
                     <button
                       onClick={handleCopyStackTrace}
-                      className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-accent"
                     >
                       {justCopied ? (
                         <>
-                          <IconCheck className="h-4 w-4" />
+                          <IconCheck className="h-3.5 w-3.5 text-green-500" />
                           <span>Copiado!</span>
                         </>
                       ) : (
                         <>
-                          <IconCopy className="h-4 w-4" />
-                          <span>Copiar</span>
+                          <IconCopy className="h-3.5 w-3.5" />
+                          <span>Copiar Stack Trace</span>
                         </>
                       )}
                     </button>
                   </div>
-                  <pre className="bg-muted p-4 rounded-md text-xs font-mono overflow-x-auto whitespace-pre-wrap break-words">
+                  <pre className="bg-muted p-4 rounded text-xs overflow-x-auto font-mono whitespace-pre-wrap">
                     {error.stackTrace}
                   </pre>
                 </div>
@@ -188,7 +208,7 @@ export function ErrorDetailModal({ appId, errorId, open, onClose }: ErrorDetailM
             </div>
           </>
         ) : (
-          <div className="py-8 text-center text-muted-foreground">Error not found</div>
+          <div className="py-8 text-center text-muted-foreground">Erro não encontrado</div>
         )}
       </DialogContent>
     </Dialog>
