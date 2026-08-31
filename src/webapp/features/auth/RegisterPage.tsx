@@ -30,7 +30,7 @@ export function Component() {
 
     const result = await registerWithPassword(name, email, password);
     if (result.success) {
-      navigate("/");
+      window.location.href = "/";
     } else {
       setErrorMessage(result.error || "Erro ao criar conta.");
       setLoading(false);

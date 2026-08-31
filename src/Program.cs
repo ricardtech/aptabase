@@ -75,17 +75,30 @@ public partial class Program
         }
         else
         {
-            var dataDir = Environment.GetEnvironmentVariable("DATA_DIR") ?? "/data";
-            if (!Directory.Exists(dataDir))
+            try
             {
-                dataDir = Path.Combine(Directory.GetCurrentDirectory(), "data");
+                var pgDataSource = Npgsql.NpgsqlDataSource.Create(appEnv.ConnectionString);
+                builder.Services.AddDataProtection()
+                                .SetApplicationName("Aptabase")
+                                .AddKeyManagementOptions(options =>
+                                {
+                                    options.XmlRepository = new PostgreSqlXmlRepository(pgDataSource);
+                                });
             }
-            var keysDir = Path.Combine(dataDir, "dataprotection");
-            Directory.CreateDirectory(keysDir);
+            catch
+            {
+                var dataDir = Environment.GetEnvironmentVariable("DATA_DIR") ?? "/data";
+                if (!Directory.Exists(dataDir))
+                {
+                    dataDir = Path.Combine(Directory.GetCurrentDirectory(), "data");
+                }
+                var keysDir = Path.Combine(dataDir, "dataprotection");
+                Directory.CreateDirectory(keysDir);
 
-            builder.Services.AddDataProtection()
-                            .SetApplicationName("Aptabase")
-                            .PersistKeysToFileSystem(new DirectoryInfo(keysDir));
+                builder.Services.AddDataProtection()
+                                .SetApplicationName("Aptabase")
+                                .PersistKeysToFileSystem(new DirectoryInfo(keysDir));
+            }
         }
 
         builder.Services.AddControllers();

@@ -45,7 +45,7 @@ export function Component() {
 
     const result = await signInWithPassword(email, password);
     if (result.success) {
-      navigate("/");
+      window.location.href = "/";
     } else {
       setErrorMessage(result.error || "E-mail ou senha incorretos.");
       setLoading(false);
