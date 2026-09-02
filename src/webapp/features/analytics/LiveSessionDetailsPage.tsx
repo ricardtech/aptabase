@@ -76,7 +76,7 @@ export function Component() {
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div className="flex gap-2 items-center">
                 <CountryFlag countryCode={data.countryCode} />
                 <div>
@@ -84,7 +84,7 @@ export function Component() {
                 </div>
               </div>
 
-              <div className="flex gap-2 items-center">
+              <div className="flex gap-2 items-center border-t border-border/40 pt-1.5 mt-1">
                 <OSIcon name={data.osName} className="h-5 w-5" />
                 <span>
                   {data.osName} {data.osVersion}
