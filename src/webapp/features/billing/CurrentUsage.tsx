@@ -2,18 +2,18 @@ import { PingSignal } from "@components/PingSignal";
 import { twMerge } from "tailwind-merge";
 
 const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
 ];
 
 type Props = {
@@ -35,16 +35,16 @@ export function CurrentUsage(props: Props) {
   return (
     <div className="flex flex-col h-full justify-between">
       <div className="flex items-center mb-1 justify-between">
-        <span>Usage</span>
+        <span>Uso</span>
         <span className="text-sm text-muted-foreground">
           {months[props.month - 1]} / {props.year}
         </span>
       </div>
       <div className="space-y-1">
         <div className="text-sm flex items-center space-x-1">
-          <span>{props.usage.toLocaleString()}</span>
+          <span>{props.usage.toLocaleString("pt-BR")}</span>
           <span className="text-muted-foreground">
-            / {props.quota.toLocaleString()} events ({percentage.toFixed(2)}
+            / {props.quota.toLocaleString("pt-BR")} eventos ({percentage.toFixed(2)}
             %)
           </span>
           {props.state === "OVERUSE" && <PingSignal color="warning" size="xs" />}

@@ -79,7 +79,7 @@ export function FilterDropdownFancy(props: Props) {
           <div className="flex items-center px-1 border-b">
             <IconPlus className="h-4 w-4 shrink-0 opacity-50" />
             <CommandInput
-              placeholder="Type a custom name..."
+              placeholder="Digitar nome personalizado..."
               value={inputValue}
               onValueChange={setInputValue}
               className="h-9 border-0"
@@ -93,7 +93,7 @@ export function FilterDropdownFancy(props: Props) {
                 onSelect={() => handleSelect(option.name)}
                 className="px-2 py-1.5"
               >
-                {option.name || "Unknown"}
+                {option.name || "Desconhecido"}
               </CommandItem>
             ))}
             {inputValue && (!filteredOptions || filteredOptions.length === 0) && (
@@ -103,7 +103,7 @@ export function FilterDropdownFancy(props: Props) {
                 className="px-2 py-1.5 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
               >
                 <IconPlus className="h-4 w-4" />
-                Filter by: "{inputValue}"
+                Filtrar por: "{inputValue}"
               </CommandItem>
             )}
           </CommandGroup>

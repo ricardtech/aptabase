@@ -24,7 +24,7 @@ function FilterChip(props: ChipProps) {
       >
         <span className="flex space-x-2 items-center text-destructive">
           <IconX strokeWidth={1.5} className="h-5 w-5" />
-          <span>Remove</span>
+          <span>Remover</span>
         </span>
       </Link>
     </span>
@@ -42,13 +42,13 @@ export function CurrentFilters() {
     <div className="flex items-center gap-2 flex-wrap">
       {eventName && (
         <FilterChip removeProperty="eventName">
-          <span>Event =</span>
+          <span>Evento =</span>
           <span className="font-bold">{eventName}</span>
         </FilterChip>
       )}
       {appVersion && (
         <FilterChip removeProperty="appVersion">
-          <span>Version =</span>
+          <span>Versão =</span>
           <span className="font-bold">{appVersion}</span>
         </FilterChip>
       )}

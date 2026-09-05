@@ -7,7 +7,7 @@ export function WaitingEventsStep() {
         <div className="p-1.5">
           <PingSignal color="success" />
         </div>
-        <span className="text-xs text-muted-foreground">Waiting for more events...</span>
+        <span className="text-xs text-muted-foreground">Aguardando mais eventos...</span>
       </div>
     </div>
   );

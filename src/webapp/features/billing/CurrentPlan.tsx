@@ -31,30 +31,30 @@ export function CurrentPlan(props: Props) {
         <span>{props.billing.plan.name}</span>
         {props.billing.plan.monthlyPrice > 0 && (
           <span>
-            ${props.billing.plan.monthlyPrice} <span className="text-sm text-muted-foreground">/mo + Tax</span>
+            ${props.billing.plan.monthlyPrice} <span className="text-sm text-muted-foreground">/mês + Impostos</span>
           </span>
         )}
       </p>
       <p className="flex items-center mb-1 justify-between -mr-2">
         {props.billing.plan.freeTrialEndsAt ? (
           <span className="text-sm space-x-1">
-            <span className="text-muted-foreground">Free access until</span>
-            <span>{new Date(props.billing.plan.freeTrialEndsAt).toLocaleDateString()}</span>
+            <span className="text-muted-foreground">Acesso gratuito até</span>
+            <span>{new Date(props.billing.plan.freeTrialEndsAt).toLocaleDateString("pt-BR")}</span>
           </span>
         ) : (
           <span className="text-sm">
-            {props.billing.plan.monthlyEvents.toLocaleString()}{" "}
-            <span className="text-muted-foreground">events / mo</span>
+            {props.billing.plan.monthlyEvents.toLocaleString("pt-BR")}{" "}
+            <span className="text-muted-foreground">eventos / mês</span>
           </span>
         )}
         <Button variant="secondary" size="xs" onClick={action} loading={loading}>
-          {hasSubscription ? "Manage Subscription" : "Upgrade"}
+          {hasSubscription ? "Gerenciar Assinatura" : "Fazer Upgrade"}
         </Button>
       </p>
       {status && !isExpired && (
         <p className="flex items-center mb-1 justify-between text-xs">
           <SubscriptionStatusBadge status={status} />
-          {expiresOn && <span className="text-muted-foreground">Expires on {formatDate(expiresOn)}</span>}
+          {expiresOn && <span className="text-muted-foreground">Expira em {formatDate(expiresOn)}</span>}
         </p>
       )}
     </div>

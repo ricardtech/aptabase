@@ -25,7 +25,7 @@ export function TopNTitle(props: Props) {
           className="text-sm items-center space-x-2 absolute m-2 hidden group-hover:flex transition-all"
           preventScrollReset={true}
         >
-          <IconArrowBackUp strokeWidth={1.75} className="h-5 w-5" /> <span>Back</span>
+          <IconArrowBackUp strokeWidth={1.75} className="h-5 w-5" /> <span>Voltar</span>
         </Link>
       )}
     </span>

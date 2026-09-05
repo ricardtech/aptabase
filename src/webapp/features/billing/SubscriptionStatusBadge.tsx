@@ -9,12 +9,12 @@ Possible statuses:
 */
 
 const statuses: Record<string, [string, string]> = {
-  active: ["Active", "text-success"],
-  cancelled: ["Cancelled", "text-destructive"],
-  expired: ["Expired", "text-destructive"],
-  paused: ["Paused", "text-primary"],
-  past_due: ["Past Due", "text-destructive"],
-  unpaid: ["Unpaid", "text-destructive"],
+  active: ["Ativo", "text-success"],
+  cancelled: ["Cancelado", "text-destructive"],
+  expired: ["Expirado", "text-destructive"],
+  paused: ["Pausado", "text-primary"],
+  past_due: ["Atrasado", "text-destructive"],
+  unpaid: ["Não Pago", "text-destructive"],
 };
 
 export function SubscriptionStatusBadge(props: { status: string }) {

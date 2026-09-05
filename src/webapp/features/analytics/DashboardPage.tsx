@@ -117,7 +117,7 @@ export function Component() {
           <WidgetContainer
             key={widgetId}
             widgetConfig={widget}
-            widgetName={widget?.title ?? "Events Chart"}
+            widgetName={widget?.title ?? "Gráfico de Eventos"}
             className="md:col-span-2"
             onToggleMinimize={() => toggleMinimize(widgetId)}
           >
@@ -129,7 +129,7 @@ export function Component() {
           <LazyLoad key={widgetId}>
             <WidgetContainer
               widgetConfig={widget}
-              widgetName={widget?.title ?? "Countries"}
+              widgetName={widget?.title ?? "Países"}
               onToggleMinimize={() => toggleMinimize(widgetId)}
               className="h-full"
             >
@@ -142,7 +142,7 @@ export function Component() {
           <LazyLoad key={widgetId}>
             <WidgetContainer
               widgetConfig={widget}
-              widgetName={widget?.title ?? "Operating Systems"}
+              widgetName={widget?.title ?? "Sistemas Operacionais"}
               onToggleMinimize={() => toggleMinimize(widgetId)}
               className="h-full"
             >
@@ -155,7 +155,7 @@ export function Component() {
           <LazyLoad key={widgetId}>
             <WidgetContainer
               widgetConfig={widget}
-              widgetName={widget?.title ?? "Events"}
+              widgetName={widget?.title ?? "Eventos"}
               onToggleMinimize={() => toggleMinimize(widgetId)}
               className="h-full"
             >
@@ -168,7 +168,7 @@ export function Component() {
           <LazyLoad key={widgetId}>
             <WidgetContainer
               widgetConfig={widget}
-              widgetName={widget?.title ?? "App Versions"}
+              widgetName={widget?.title ?? "Versões do App"}
               onToggleMinimize={() => toggleMinimize(widgetId)}
               className="h-full"
             >

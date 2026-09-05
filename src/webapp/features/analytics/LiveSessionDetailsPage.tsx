@@ -72,7 +72,7 @@ export function Component() {
 
               <div className="flex gap-2 items-center">
                 <IconClick className="text-muted-foreground h-5 w-5" />
-                <span>{data.eventsCount} events</span>
+                <span>{data.eventsCount} {data.eventsCount === 1 ? "evento" : "eventos"}</span>
               </div>
             </div>
 

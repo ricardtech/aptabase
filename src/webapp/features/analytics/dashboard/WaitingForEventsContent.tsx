@@ -42,18 +42,18 @@ export function WaitingForEventsContent(props: Props) {
         </div>
       )}
       <p className="text-center text-muted-foreground mx-14">
-        Install an{" "}
+        Instale o{" "}
         <Link to={`/${props.appId}/instructions`} className="text-foreground underline">
-          Aptabase SDK
+          SDK do Aptabase
         </Link>{" "}
-        on your app to get started.
+        no seu aplicativo para começar a coletar eventos.
       </p>
       <PingSignal color="success" />
       {isSupportEnabled && (
         <div className="w-full space-y-4">
           <hr className="mx-4" />
           <p className="text-xs text-center text-muted-foreground">
-            Need help? <ContactUsLink className="text-white underline">Contact us</ContactUsLink>
+            Precisa de ajuda? <ContactUsLink className="text-white underline">Fale conosco</ContactUsLink>
           </p>
         </div>
       )}

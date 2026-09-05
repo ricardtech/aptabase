@@ -32,16 +32,16 @@ export function TeaserDashboardContainer(props: Props) {
 
           <KeyMetricsContainer>
             <Metric
-              label="Daily Users"
+              label="Usuários Diários"
               current={42}
               previous={24}
               activeClassName="bg-primary"
               active={true}
               format="number"
             />
-            <Metric label="Sessions" current={94} previous={65} activeClassName="bg-primary" format="number" />
-            <Metric label="Events" activeClassName="bg-foreground" current={3504} previous={2406} format="number" />
-            <Metric label="Avg. Duration" current={340} format="duration" />
+            <Metric label="Sessões" current={94} previous={65} activeClassName="bg-primary" format="number" />
+            <Metric label="Eventos" activeClassName="bg-foreground" current={3504} previous={2406} format="number" />
+            <Metric label="Duração Média" current={340} format="duration" />
           </KeyMetricsContainer>
 
           <MetricsChart
@@ -69,9 +69,9 @@ export function TeaserDashboardContainer(props: Props) {
                   { name: "AU", value: 64 },
                   { name: "DE", value: 50 },
                 ]}
-                title="Countries"
+                title="Países"
                 defaultFormat="percentage"
-                valueLabel="Sessions"
+                valueLabel="Sessões"
                 renderRow={(item) => <Country countryCode={item.name} />}
               />
             </div>
@@ -86,9 +86,9 @@ export function TeaserDashboardContainer(props: Props) {
                   { name: "Ubuntu", value: 176 },
                   { name: "iPadOS", value: 42 },
                 ]}
-                title="Operating Systems"
+                title="Sistemas Operacionais"
                 defaultFormat="percentage"
-                valueLabel="Sessions"
+                valueLabel="Sessões"
                 renderRow={(item) => <OS name={item.name} />}
               />
             </div>
@@ -102,9 +102,9 @@ export function TeaserDashboardContainer(props: Props) {
                   { name: "paywall_shown", value: 680 },
                   { name: "subscribed", value: 453 },
                 ]}
-                title="Events"
+                title="Eventos"
                 defaultFormat="absolute"
-                valueLabel="Count"
+                valueLabel="Total"
               />
             </div>
             <div className={containerClassName}>
@@ -118,8 +118,8 @@ export function TeaserDashboardContainer(props: Props) {
                   { name: "1.0.0", value: 12 },
                 ]}
                 defaultFormat="percentage"
-                title="App Versions"
-                valueLabel="Sessions"
+                title="Versões do App"
+                valueLabel="Sessões"
               />
             </div>
           </div>

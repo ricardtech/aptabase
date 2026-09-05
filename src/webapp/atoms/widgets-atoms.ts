@@ -31,7 +31,7 @@ export type WidgetsConfig = {
 export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
   {
     id: "events-chart",
-    title: "Custom Chart",
+    title: "Gráfico Personalizado",
     type: "custom-events-chart",
     isMinimized: false,
     orderIndex: 0,
@@ -43,7 +43,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
   },
   {
     id: "main-chart",
-    title: "Events Chart",
+    title: "Gráfico de Eventos",
     type: "events-chart",
     isMinimized: false,
     orderIndex: 1,
@@ -51,7 +51,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
   },
   {
     id: "country",
-    title: "Countries",
+    title: "Países",
     type: "countries",
     isMinimized: false,
     orderIndex: 2,
@@ -59,7 +59,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
   },
   {
     id: "os",
-    title: "Operating Systems",
+    title: "Sistemas Operacionais",
     type: "operating-systems",
     isMinimized: false,
     orderIndex: 3,
@@ -67,7 +67,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
   },
   {
     id: "event",
-    title: "Events",
+    title: "Eventos",
     type: "events",
     isMinimized: false,
     orderIndex: 4,
@@ -75,7 +75,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
   },
   {
     id: "version",
-    title: "App Versions",
+    title: "Versões do App",
     type: "app-versions",
     isMinimized: false,
     orderIndex: 5,
@@ -85,7 +85,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
 
 const EMPTY_CUSTOM_EVENTS_CHART_WIDGET: SingleWidgetConfig<EventsChartWidgetConfig> = {
   id: "events-chart",
-  title: "Custom Chart",
+  title: "Gráfico Personalizado",
   type: "custom-events-chart",
   isMinimized: false,
   orderIndex: 0,

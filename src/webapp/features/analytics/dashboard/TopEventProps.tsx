@@ -125,7 +125,7 @@ export function TopEventProps(props: Props) {
       keyLabel={<StringKeySelector stringKeys={stringKeys} onChangeIndex={setStringKeyIndex} />}
       valueLabel={
         numericKeys.length === 0 ? (
-          "Events"
+          "Eventos"
         ) : (
           <NumericKeySelector numericKeys={numericKeys} onChange={setSelectedNumericKey} />
         )

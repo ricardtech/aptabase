@@ -25,7 +25,7 @@ export function EventStep(props: Props) {
             {props.distance > 60000
               ? `${formatDate(props.timestamp)} ${formatTime(props.timestamp)}`
               : props.distance > 0
-              ? `${formatNumber(props.distance / 1000, "duration")} later`
+              ? `${formatNumber(props.distance / 1000, "duration")} depois`
               : ""}
           </div>
           <span className="text-lg">{props.eventName}</span>

@@ -11,14 +11,14 @@ export function ErrorState(props: Props) {
     <div className="w-full h-full text-destructive flex flex-col space-y-1 items-center justify-center">
       <p className="text-lg flex items-center space-x-2">
         <IconAlertTriangle className="h-5 w-5" />
-        <span>Oops... Something went wrong.</span>
+        <span>Ops... Algo deu errado.</span>
       </p>
       <p className="text-sm text-muted-foreground">
-        Please try again. If the problem persists, please contact support.
+        Por favor, tente novamente. Se o problema persistir, entre em contato com o suporte.
       </p>
       {props.refetch && (
         <Button variant="ghost" onClick={() => props.refetch?.()} type="button">
-          Refresh
+          Atualizar
         </Button>
       )}
     </div>

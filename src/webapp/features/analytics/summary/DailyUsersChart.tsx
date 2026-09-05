@@ -27,7 +27,7 @@ export function DailyUsersChart(props: Props) {
       datasets: [
         {
           type: "line",
-          label: "Daily Users",
+          label: "Usuários Diários",
           data: props.values,
           borderColor: colors.primary,
           fill: "origin",

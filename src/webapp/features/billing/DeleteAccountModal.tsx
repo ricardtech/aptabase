@@ -80,16 +80,16 @@ export function DeleteAccountModal(props: Props) {
                   </button>
                 </div>
                 <Dialog.Title as="h3" className="text-lg font-medium text-destructive">
-                  Delete Account
+                  Excluir Conta
                 </Dialog.Title>
                 <form onSubmit={handleSubmit} className="mt-2">
                   <p className="text-sm text-muted-foreground mb-4">
-                    This action cannot be undone. This will permanently delete your account and remove all associated
-                    data from our servers.
+                    Esta ação não pode ser desfeita. Isso excluirá permanentemente sua conta e removerá todos os dados
+                    associados de nossos servidores.
                   </p>
                   <TextInput
                     name="confirmation"
-                    placeholder="Type 'DELETE' to confirm"
+                    placeholder="Digite 'DELETE' para confirmar"
                     autoComplete="off"
                     required={true}
                     value={confirmation}
@@ -101,7 +101,7 @@ export function DeleteAccountModal(props: Props) {
                     disabled={confirmation !== "DELETE" || processing}
                     loading={processing}
                   >
-                    Delete Account
+                    Excluir Conta
                   </Button>
                 </form>
               </Dialog.Panel>

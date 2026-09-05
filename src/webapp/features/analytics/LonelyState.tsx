@@ -22,16 +22,16 @@ export function LonelyState() {
 
   return (
     <div className="mx-auto pt-8 lg:pt-24 max-w-3xl text-base">
-      <h2 className="text-3xl font-bold sm:text-4xl">👋 Hey {user.name}</h2>
+      <h2 className="text-3xl font-bold sm:text-4xl">👋 Olá, {user.name}</h2>
       <p className="mt-8 text-muted-foreground">
-        Register your application and configure the analytics SDK to get started.
+        Cadastre sua primeira aplicação e configure o SDK de telemetria para começar.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8">
         <TextInput
-          label="What's your app name?"
+          label="Qual é o nome do seu aplicativo?"
           name="name"
-          placeholder="App Name"
+          placeholder="Ex: Meu App Incrível"
           autoComplete="off"
           required={true}
           className="w-80"
@@ -39,10 +39,10 @@ export function LonelyState() {
           onChange={(e) => setName(e.target.value)}
         />
         <p className="text-sm text-muted-foreground mt-1">
-          A friendly name to identify your app. You can change it later.
+          Um nome amigável para identificar seu app. Você pode alterar a qualquer momento.
         </p>
         <Button className="mt-4" disabled={name.length < 2 || name.length > 40 || processing}>
-          Create
+          Criar Aplicativo
         </Button>
       </form>
     </div>

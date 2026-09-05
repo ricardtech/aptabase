@@ -19,8 +19,8 @@ export function Component() {
   const isError = isErrorBilling || isErrorHistorical;
 
   return (
-    <Page title="Billing">
-      <PageHeading title="Billing" subtitle="Manage your subscription" />
+    <Page title="Faturamento">
+      <PageHeading title="Faturamento" subtitle="Gerencie sua assinatura" />
 
       <div className="flex flex-col gap-8 max-w-3xl mt-8">
         {isLoading && <LoadingState />}
@@ -53,7 +53,7 @@ function Body(props: { billing: BillingInfo; historical: BillingHistoricalUsage[
         </div>
       </div>
       <div>
-        <p>Monthly Usage</p>
+        <p>Uso Mensal</p>
 
         <div className="h-60 mt-4">
           <MonthlyUsageChart
@@ -67,24 +67,24 @@ function Body(props: { billing: BillingInfo; historical: BillingHistoricalUsage[
         <div className="flex items-center justify-end text-xs text-muted-foreground gap-4 mt-2 mr-4">
           <div className="space-x-1">
             <div className="bg-success w-2 h-2 rounded-full inline-block" />
-            <span>Limit</span>
+            <span>Limite</span>
           </div>
 
           <div className="space-x-1">
             <div className="bg-primary w-2 h-2 rounded-full inline-block" />
-            <span>Usage</span>
+            <span>Uso</span>
           </div>
         </div>
       </div>
 
       <div className="mt-12">
-        <PageHeading title="Zona de Perigo" subtitle="Be careful with these actions" />
+        <PageHeading title="Zona de Perigo" subtitle="Tenha cuidado com estas ações" />
         <div className="border-[0.5px] border-destructive rounded-md mt-4">
           <DangerZoneItem
-            title="Delete Account"
-            description="Once you delete your account, there is no going back."
-            subDescription="All events and associated data will be permanently erased from our database."
-            actionText="Delete account"
+            title="Excluir Conta"
+            description="Uma vez que você excluir sua conta, não há como voltar atrás."
+            subDescription="Todos os eventos e dados associados serão apagados permanentemente do nosso banco de dados."
+            actionText="Excluir conta"
             onClick={openDeleteModal}
           />
         </div>

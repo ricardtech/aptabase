@@ -99,18 +99,18 @@ export function UserSessionsList(props: Props) {
         {!!dateFilters.sessionId && (
           <Button disabled={isPlaceholderData} variant="ghost" onClick={firstPageClick}>
             <IconChevronsLeft></IconChevronsLeft>
-            First
+            Primeira Página
           </Button>
         )}
         {(!!dateFilters.sessionId || isPlaceholderData) && (
           <Button disabled={isPlaceholderData} variant="ghost" onClick={previousPageClick}>
             <IconChevronLeft></IconChevronLeft>
-            Previous
+            Anterior
           </Button>
         )}
         {(sessions.length >= SESSIONS_PAGE_SIZE || isPlaceholderData) && (
           <Button disabled={isPlaceholderData} variant="ghost" onClick={nextPageClick}>
-            Next
+            Próximo
             <IconChevronRight></IconChevronRight>
           </Button>
         )}

@@ -5,5 +5,5 @@ type Props = {
 };
 
 export function CountryName(props: Props) {
-  return <>{getCountryName(props.countryCode) || "Unknown"}</>;
+  return <>{getCountryName(props.countryCode) || "Desconhecido"}</>;
 }

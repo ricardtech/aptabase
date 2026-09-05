@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node -e \"import('fs').then(fs => { const m = fs.readFileSync('./webapp/version.ts', 'utf8').match(/APP_VERSION\\s*=\\s*\\\"([^\\\"]+)\\\"/); fs.writeFileSync('./webapp/public/version.json', JSON.stringify({ version: m ? m[1] : 'v2.0.4' })); });\" && tsc && vite build",
+    "build": "node -e \"import('fs').then(fs => { const m = fs.readFileSync('./webapp/version.ts', 'utf8').match(/APP_VERSION\\s*=\\s*\\\"([^\\\"]+)\\\"/); fs.writeFileSync('./webapp/public/version.json', JSON.stringify({ version: m ? m[1] : 'v2.0.7' })); });\" && tsc && vite build",
     "dev": "vite --clearScreen false",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
     "@aptabase/web": "0.4.0",
@@ -48,15 +49,16 @@
     "@types/node": "20.8.7",
     "@types/react": "18.2.30",
     "@types/react-dom": "18.2.14",
-    "@vitejs/plugin-react-swc": "3.4.0",
+    "@vitejs/plugin-react-swc": "^3.7.2",
     "autoprefixer": "10.4.16",
     "postcss": "8.4.31",
     "tailwind-merge": "1.14.0",
     "tailwindcss": "3.3.3",
     "tailwindcss-animate": "1.0.7",
     "typescript": "5.2.2",
-    "vite": "^4.5.3",
-    "vite-plugin-mkcert": "^1.17.5"
+    "vite": "^8.2.2",
+    "vite-plugin-mkcert": "^1.17.5",
+    "vitest": "^3.0.0"
   },
   "engines": {
     "node": ">=14",

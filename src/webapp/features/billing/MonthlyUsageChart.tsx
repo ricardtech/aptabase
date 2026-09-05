@@ -18,14 +18,14 @@ export function MonthlyUsageChart(props: Props) {
       datasets: [
         {
           type: "bar",
-          label: "Daily Users",
+          label: "Eventos",
           data: props.events,
           backgroundColor: colors.primary,
           hoverBackgroundColor: colors.primary,
         },
         {
           type: "line",
-          label: "Limit",
+          label: "Limite",
           data: props.events.map(() => props.quota),
           borderColor: props.state === "OK" ? colors.success : colors.destructive,
           borderWidth: 2,

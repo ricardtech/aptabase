@@ -30,7 +30,7 @@ type Props = {
   refetch?: (options?: RefetchOptions | undefined) => Promise<QueryObserverResult<any, Error>>;
 };
 
-const defaultRenderRow = (item: Item) => <>{item.name || <i>Empty</i>}</>;
+const defaultRenderRow = (item: Item) => <>{item.name || <i>Vazio</i>}</>;
 
 export function TopNChart(props: Props) {
   const [format, setFormat] = useLocalStorage<"absolute" | "percentage">(

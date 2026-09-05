@@ -6,41 +6,48 @@ import { AppIcon } from "./AppIcon";
 type ImageDetails = {
   src: string;
   contentAsBase64: string;
-  width: number;
-  height: number;
 };
 
-async function getImageDetails(file: File): Promise<ImageDetails> {
+async function processImageFile(file: File): Promise<ImageDetails> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = function (e) {
-      var image = new Image();
-      image!.src = reader.result as string;
-      image.onload = function () {
-        if (image.width !== image.height) {
-          reject("O ícone deve ter proporção quadrada (1:1).");
+    reader.onload = function () {
+      const img = new Image();
+      img.src = reader.result as string;
+      img.onload = function () {
+        const size = 128;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject("Não foi possível processar a imagem.");
           return;
         }
 
-        if (image.width < 100 || image.height < 100) {
-          reject("O ícone deve ter no mínimo 100x100 pixels.");
-          return;
-        }
+        // Auto center-crop to square
+        const minDim = Math.min(img.width, img.height);
+        const startX = (img.width - minDim) / 2;
+        const startY = (img.height - minDim) / 2;
+
+        ctx.clearRect(0, 0, size, size);
+        ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, size, size);
+
+        const dataUrl = canvas.toDataURL("image/png");
+        const base64 = dataUrl.split(",")[1];
 
         resolve({
-          src: image.src,
-          contentAsBase64: image.src.split(",")[1],
-          width: image.width,
-          height: image.height,
+          src: dataUrl,
+          contentAsBase64: base64,
         });
       };
-      image.onerror = function () {
-        reject("Arquivo de imagem inválido.");
+      img.onerror = function () {
+        reject("Arquivo de imagem inválido ou corrompido.");
       };
     };
-    reader.onerror = function (error) {
-      reject("Erro ao carregar a imagem.");
+    reader.onerror = function () {
+      reject("Erro ao ler o arquivo de imagem.");
     };
   });
 }
@@ -53,6 +60,7 @@ type Props = {
 export function AppIconUpload(props: Props) {
   const [imgSrc, setImgSrc] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function handleClick() {
@@ -60,29 +68,32 @@ export function AppIconUpload(props: Props) {
   }
 
   async function handleFileChanged(event: React.ChangeEvent<HTMLInputElement>) {
-    props.onIconChanged("");
     setError("");
 
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 1024 * 50) {
-      setError("O tamanho do ícone deve ser menor que 50KB.");
+    if (file.size > 10 * 1024 * 1024) {
+      setError("O tamanho do arquivo deve ser menor que 10MB.");
       return;
     }
 
-    if (file.type !== "image/png") {
-      setError("O ícone deve ser um arquivo PNG.");
+    if (!file.type.startsWith("image/")) {
+      setError("Por favor, selecione um arquivo de imagem válido (PNG, JPG, WebP, SVG).");
       return;
     }
 
     try {
-      const details = await getImageDetails(file);
+      setIsProcessing(true);
+      const details = await processImageFile(file);
       setImgSrc(details.src);
       props.onIconChanged(details.contentAsBase64);
     } catch (err: any) {
-      console.log(err);
       setError(err instanceof Error ? err.message : err.toString());
+    } finally {
+      setIsProcessing(false);
+      // Reset input value so same file can be selected again if needed
+      if (inputRef.current) inputRef.current.value = "";
     }
   }
 
@@ -91,24 +102,27 @@ export function AppIconUpload(props: Props) {
       <label className="text-sm mb-2 block font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
         Ícone
       </label>
-      <div className="flex gap-2 items-center">
-        {imgSrc ? (
-          <img src={imgSrc} className="w-9 h-9 rounded" loading="lazy" />
-        ) : props.iconPath ? (
-          <AppIcon iconPath={props.iconPath} className="w-9 h-9" />
-        ) : (
-          <IconCube className="w-9 h-9 border p-1.5 rounded" />
-        )}
+      <div className="flex gap-3 items-center">
+        <div className="relative flex-shrink-0">
+          {imgSrc ? (
+            <img src={imgSrc} className="w-10 h-10 rounded border shadow-sm object-cover" loading="lazy" alt="Ícone do app" />
+          ) : props.iconPath ? (
+            <AppIcon iconPath={props.iconPath} className="w-10 h-10 rounded border shadow-sm" />
+          ) : (
+            <IconCube className="w-10 h-10 border p-1.5 rounded text-muted-foreground bg-muted/40" />
+          )}
+        </div>
 
-        <input ref={inputRef} onChange={handleFileChanged} type="file" className="hidden" />
+        <input ref={inputRef} onChange={handleFileChanged} type="file" accept="image/*" className="hidden" />
         <div>
-          <Button variant="ghost" onClick={handleClick} type="button">
-            Alterar
+          <Button variant="ghost" onClick={handleClick} type="button" disabled={isProcessing}>
+            {isProcessing ? "Processando..." : "Alterar"}
           </Button>
         </div>
       </div>
+      <p className="text-xs text-muted-foreground mt-1.5">Formatos suportados: PNG, JPG, WebP e SVG. Ajustado automaticamente para 128x128.</p>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-sm text-destructive mt-1">{error}</p>}
     </div>
   );
 }

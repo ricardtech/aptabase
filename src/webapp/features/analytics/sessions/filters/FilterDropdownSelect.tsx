@@ -31,7 +31,7 @@ export function FilterDropdownSelect(props: Props) {
       <SelectContent className="max-h-[410px] overflow-y-auto">
         {options.map((option) => (
           <SelectItem key={option.value} value={option.name}>
-            {option.name || "Unknown"}
+            {option.name || "Desconhecido"}
           </SelectItem>
         ))}
       </SelectContent>

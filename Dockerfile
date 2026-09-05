@@ -14,14 +14,14 @@ COPY ./src /work/src
 RUN dotnet publish "Aptabase.csproj" -a $TARGETARCH -c Release -o /work/publish /p:UseAppHost=false
 
 # WebApp Build
-FROM node:22 AS webapp
+FROM oven/bun:1.4.2-alpine AS webapp
 WORKDIR /work
 
-COPY ./src/package.json ./src/package-lock.json ./
-RUN npm install
+COPY ./src/package.json ./src/bun.lock* ./
+RUN bun install
 
 COPY ./src ./
-RUN npm run build
+RUN bun run build
 
 # Final
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final

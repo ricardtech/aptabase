@@ -15,17 +15,20 @@ export default defineConfig({
     outDir: "wwwroot",
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ["react", "react-router-dom", "react-dom"],
-          chartjs: ["chart.js", "chartjs-plugin-annotation"],
+        manualChunks(id: string) {
+          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/") || id.includes("node_modules/react-router-dom/")) {
+            return "react";
+          }
+          if (id.includes("node_modules/chart.js/") || id.includes("node_modules/chartjs-plugin-annotation/")) {
+            return "chartjs";
+          }
         },
       },
     },
   },
   server: {
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     port: 3000,
-    https: true,
     headers: {
       "Content-Security-Policy": `default-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://client.crisp.chat; script-src 'self' 'unsafe-inline' https://client.crisp.chat; font-src 'self' https://client.crisp.chat; connect-src https://raw.githubusercontent.com wss://client.relay.crisp.chat https://client.crisp.chat wss://localhost:3000 https://localhost:3000`,
     },

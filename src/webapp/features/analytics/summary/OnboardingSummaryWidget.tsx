@@ -22,7 +22,7 @@ export function OnboardingSummaryWidget(props: Props) {
           <PingSignal color="success" size="sm" />
           <div>
             <p className="text-center">Aguardando o primeiro evento...</p>
-            <p className="text-center text-muted-foreground">Click to learn more</p>
+            <p className="text-center text-muted-foreground">Clique para saber mais</p>
           </div>
         </div>
       </div>
