@@ -1,17 +1,24 @@
 import { toast } from "sonner";
 
 async function handleError(status: number, response: Response): Promise<void> {
-  if (status >= 500) {
-    // TODO: show error toast
-  } else if (status === 401) {
-    // TODO: show error toast
-  } else if (status === 403) {
-    // TODO: show error toast
-  } else if (status === 400) {
-    const errors = (await response.json()) as ValidationError;
-    const message = Object.values(errors.errors).flat().join("\n");
-    toast.error(message);
-    throw new Error(message);
+  if (status >= 400) {
+    try {
+      const body = await response.clone().json();
+      if (body?.errors && typeof body.errors === "object") {
+        const message = Object.values(body.errors).flat().join("\n");
+        toast.error(message);
+        throw new Error(message);
+      } else if (body?.message) {
+        toast.error(body.message);
+        throw new Error(body.message);
+      }
+    } catch (e: any) {
+      if (e.message && e.message !== "Failed to fetch") throw e;
+    }
+    const text = await response.clone().text();
+    const msg = text || `Erro na requisição (HTTP ${status})`;
+    toast.error(msg);
+    throw new Error(msg);
   }
 }
 

@@ -78,10 +78,12 @@ public class S3ExportController(NpgsqlDataSource dataSource, IS3EventExporter s3
             body.S3Endpoint,
             body.S3Bucket,
             S3Region = string.IsNullOrWhiteSpace(body.S3Region) ? "us-east-1" : body.S3Region,
-            body.S3AccessKey,
-            body.S3SecretKey,
+            S3AccessKey = body.S3AccessKey ?? "",
+            S3SecretKey = body.S3SecretKey ?? "",
             body.Enabled
         });
+
+        _s3Exporter.InvalidateCache(appId);
 
         return Ok(new { success = true, message = "Configurações de exportação para RustFS/S3 salvas com sucesso!" });
     }

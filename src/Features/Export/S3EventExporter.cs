@@ -15,6 +15,7 @@ public interface IS3EventExporter
 {
     Task ExportBatchAsync(IReadOnlyList<EventRow> events, CancellationToken cancellationToken = default);
     Task<(bool success, int count, string message)> SyncAppEventsAsync(string appId, DateTime? startDate = null, DateTime? endDate = null, CancellationToken cancellationToken = default);
+    void InvalidateCache(string appId);
 }
 
 public class S3ExportSettingsCacheItem
@@ -39,6 +40,11 @@ public class S3EventExporter(
     private readonly IMemoryCache _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
     private readonly IQueryClient _queryClient = queryClient ?? throw new ArgumentNullException(nameof(queryClient));
     private readonly ILogger<S3EventExporter> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+    public void InvalidateCache(string appId)
+    {
+        _memoryCache.Remove($"s3_export_settings_{appId}");
+    }
 
     public async Task ExportBatchAsync(IReadOnlyList<EventRow> events, CancellationToken cancellationToken = default)
     {

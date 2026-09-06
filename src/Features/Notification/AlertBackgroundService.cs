@@ -8,6 +8,37 @@ using System.Text.Json;
 
 namespace Aptabase.Features.Notification;
 
+public class AlertAppSettingRow
+{
+    public string AppId { get; set; } = string.Empty;
+    public string AppName { get; set; } = string.Empty;
+    public string? WhatsGoUrl { get; set; }
+    public string? WhatsGoInstance { get; set; }
+    public string? WhatsGoToken { get; set; }
+    public string? WhatsGoPhone { get; set; }
+    public bool WhatsGoEnabled { get; set; }
+    public string? TelegramBotToken { get; set; }
+    public string? TelegramChatId { get; set; }
+    public bool TelegramEnabled { get; set; }
+    public bool NotifyCriticalErrors { get; set; }
+    public bool NotifyDailySummary { get; set; }
+}
+
+public class ErrorItemRow
+{
+    public string? ErrorId { get; set; }
+    public string? AppId { get; set; }
+    public DateTime Timestamp { get; set; }
+    public string? ErrorMessage { get; set; }
+    public string? ErrorType { get; set; }
+    public string? StackTrace { get; set; }
+    public string? Platform { get; set; }
+    public string? OsName { get; set; }
+    public string? OsVersion { get; set; }
+    public string? AppVersion { get; set; }
+    public string? Severity { get; set; }
+}
+
 public class AlertBackgroundService(
     IServiceScopeFactory scopeFactory,
     IHttpClientFactory httpClientFactory,
@@ -33,10 +64,10 @@ public class AlertBackgroundService(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro no loop do AlertBackgroundService.");
+                _logger.LogError(ex, "Erro no loop principal do AlertBackgroundService.");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
         }
     }
 
@@ -60,24 +91,27 @@ public class AlertBackgroundService(
               AND s.notify_critical_errors = TRUE
               AND a.deleted_at IS NULL";
 
-        var settingsList = await conn.QueryAsync<dynamic>(sql);
+        var settingsList = await conn.QueryAsync<AlertAppSettingRow>(sql);
 
         foreach (var s in settingsList)
         {
-            string appId = s.appid;
-            string appName = s.appname;
+            string appId = s.AppId;
+            string appName = s.AppName;
 
             try
             {
-                var errors = await queryClient.NamedQueryAsync<dynamic>("get_errors__v1", new {
+                var errors = await queryClient.NamedQueryAsync<ErrorItemRow>("get_errors__v1", new {
                     app_id = appId,
-                    date_from = DateTime.UtcNow.AddMinutes(-5).ToString("yyyy-MM-dd HH:mm:ss")
+                    start_date = DateTime.UtcNow.AddMinutes(-10).ToString("yyyy-MM-dd HH:mm:ss"),
+                    end_date = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+                    limit = 10,
+                    offset = 0
                 }, cancellationToken);
 
                 var errorList = errors.ToList();
                 if (errorList.Count > 0)
                 {
-                    string dedupeKey = $"{appId}_{errorList.Count}";
+                    string dedupeKey = $"{appId}_{errorList.Count}_{errorList.First().ErrorType}";
                     if (_lastAlertSent.TryGetValue(dedupeKey, out var lastSent) && (DateTime.UtcNow - lastSent).TotalMinutes < 15)
                     {
                         continue;
@@ -86,31 +120,31 @@ public class AlertBackgroundService(
                     _lastAlertSent[dedupeKey] = DateTime.UtcNow;
 
                     var firstErr = errorList.First();
-                    string errType = firstErr.name ?? firstErr.type ?? "Critical Error";
-                    string errMessage = firstErr.message ?? "Erro detectado no aplicativo.";
+                    string errType = firstErr.ErrorType ?? "Erro de Aplicativo";
+                    string errMessage = firstErr.ErrorMessage ?? "Falha detectada no aplicativo.";
 
                     string whatsGoText = $"🚨 *ALERTA DE ERRO NO APP: {appName}*\n\n" +
                                          $"*Tipo:* `{errType}`\n" +
                                          $"*Mensagem:* {errMessage}\n" +
-                                         $"*Ocorrências recentes:* {errorList.Count} nos últimos 5 min.\n" +
+                                         $"*Ocorrências recentes:* {errorList.Count} nos últimos 10 min.\n" +
                                          $"*Data/Hora:* {DateTime.UtcNow:dd/MM/yyyy HH:mm:ss} UTC\n\n" +
                                          $"Acesse seu painel Aptabase para mais detalhes.";
 
                     string telegramText = $"🚨 <b>ALERTA DE ERRO NO APP: {appName}</b>\n\n" +
                                           $"<b>Tipo:</b> <code>{errType}</code>\n" +
                                           $"<b>Mensagem:</b> {errMessage}\n" +
-                                          $"<b>Ocorrências recentes:</b> {errorList.Count} nos últimos 5 min.\n" +
+                                          $"<b>Ocorrências recentes:</b> {errorList.Count} nos últimos 10 min.\n" +
                                           $"<b>Data/Hora:</b> {DateTime.UtcNow:dd/MM/yyyy HH:mm:ss} UTC\n\n" +
                                           $"Acesse seu painel Aptabase para mais detalhes.";
 
-                    if ((bool)s.whatsgoenabled && !string.IsNullOrWhiteSpace((string)s.whatsgourl) && !string.IsNullOrWhiteSpace((string)s.whatsgophone))
+                    if (s.WhatsGoEnabled && !string.IsNullOrWhiteSpace(s.WhatsGoUrl) && !string.IsNullOrWhiteSpace(s.WhatsGoPhone))
                     {
-                        await SendWhatsGoAsync((string)s.whatsgourl, (string)s.whatsgoinstance, (string)s.whatsgotoken, (string)s.whatsgophone, whatsGoText);
+                        await SendWhatsGoAsync(s.WhatsGoUrl, s.WhatsGoInstance, s.WhatsGoToken, s.WhatsGoPhone, whatsGoText);
                     }
 
-                    if ((bool)s.telegramenabled && !string.IsNullOrWhiteSpace((string)s.telegrambottoken) && !string.IsNullOrWhiteSpace((string)s.telegramchatid))
+                    if (s.TelegramEnabled && !string.IsNullOrWhiteSpace(s.TelegramBotToken) && !string.IsNullOrWhiteSpace(s.TelegramChatId))
                     {
-                        await SendTelegramAsync((string)s.telegrambottoken, (string)s.telegramchatid, telegramText);
+                        await SendTelegramAsync(s.TelegramBotToken, s.TelegramChatId, telegramText);
                     }
                 }
             }
@@ -145,12 +179,12 @@ public class AlertBackgroundService(
                   AND s.notify_daily_summary = TRUE
                   AND a.deleted_at IS NULL";
 
-            var settingsList = await conn.QueryAsync<dynamic>(sql);
+            var settingsList = await conn.QueryAsync<AlertAppSettingRow>(sql);
 
             foreach (var s in settingsList)
             {
-                string appId = s.appid;
-                string appName = s.appname;
+                string appId = s.AppId;
+                string appName = s.AppName;
 
                 try
                 {
@@ -164,14 +198,14 @@ public class AlertBackgroundService(
                                              $"Seu aplicativo está ativo e recebendo telemetria com sucesso!\n" +
                                              $"Consulte o painel web para analisar métricas detalhadas de usuários e sessões.";
 
-                    if ((bool)s.whatsgoenabled && !string.IsNullOrWhiteSpace((string)s.whatsgourl) && !string.IsNullOrWhiteSpace((string)s.whatsgophone))
+                    if (s.WhatsGoEnabled && !string.IsNullOrWhiteSpace(s.WhatsGoUrl) && !string.IsNullOrWhiteSpace(s.WhatsGoPhone))
                     {
-                        await SendWhatsGoAsync((string)s.whatsgourl, (string)s.whatsgoinstance, (string)s.whatsgotoken, (string)s.whatsgophone, whatsGoSummary);
+                        await SendWhatsGoAsync(s.WhatsGoUrl, s.WhatsGoInstance, s.WhatsGoToken, s.WhatsGoPhone, whatsGoSummary);
                     }
 
-                    if ((bool)s.telegramenabled && !string.IsNullOrWhiteSpace((string)s.telegrambottoken) && !string.IsNullOrWhiteSpace((string)s.telegramchatid))
+                    if (s.TelegramEnabled && !string.IsNullOrWhiteSpace(s.TelegramBotToken) && !string.IsNullOrWhiteSpace(s.TelegramChatId))
                     {
-                        await SendTelegramAsync((string)s.telegrambottoken, (string)s.telegramchatid, telegramSummary);
+                        await SendTelegramAsync(s.TelegramBotToken, s.TelegramChatId, telegramSummary);
                     }
                 }
                 catch (Exception ex)
@@ -208,7 +242,8 @@ public class AlertBackgroundService(
                 req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token.Trim()}");
             }
             req.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
-            await client.SendAsync(req);
+            var response = await client.SendAsync(req);
+            _logger.LogInformation("WhatsGo alert sent: StatusCode={StatusCode}", response.StatusCode);
         }
         catch (Exception ex)
         {
@@ -236,7 +271,8 @@ public class AlertBackgroundService(
 
             using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
             req.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
-            await client.SendAsync(req);
+            var response = await client.SendAsync(req);
+            _logger.LogInformation("Telegram alert sent: StatusCode={StatusCode}", response.StatusCode);
         }
         catch (Exception ex)
         {
