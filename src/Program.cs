@@ -8,6 +8,7 @@ using Aptabase.Features.Billing.LemonSqueezy;
 using Aptabase.Features.Blob;
 using Aptabase.Features.ErrorReporting;
 using Aptabase.Features.ErrorReporting.Buffer;
+using Aptabase.Features.Export;
 using Aptabase.Features.GeoIP;
 using Aptabase.Features.Ingestion;
 using Aptabase.Features.Ingestion.Buffer;
@@ -177,6 +178,7 @@ public partial class Program
         builder.Services.AddSingleton<IEventBuffer, InMemoryEventBuffer>();
         builder.Services.AddSingleton<IErrorBuffer, InMemoryErrorBuffer>();
         builder.Services.AddSingleton<IPiiSanitizer, PiiSanitizer>();
+        builder.Services.AddSingleton<IS3EventExporter, S3EventExporter>();
         builder.Services.AddHostedService<EventBackgroundWritter>();
         builder.Services.AddHostedService<ErrorBackgroundWritter>();
         if (appEnv.ErrorQuotaEnabled)

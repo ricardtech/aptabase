@@ -40,7 +40,7 @@ export function RustFSExportSection({ app }: Props) {
   useEffect(() => {
     async function loadSettings() {
       try {
-        const data = await api.get<S3SettingsData>(`/api/apps/${app.id}/export/s3`);
+        const data = await api.get<S3SettingsData>(`/apps/${app.id}/export/s3`);
         if (data) {
           setFormData({
             appId: app.id,
@@ -66,7 +66,7 @@ export function RustFSExportSection({ app }: Props) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.put(`/api/apps/${app.id}/export/s3`, formData);
+      await api.put(`/apps/${app.id}/export/s3`, formData);
       toast.success("Configurações do RustFS/S3 salvas com sucesso!");
     } catch (err: any) {
       toast.error(err.message || "Erro ao salvar configurações.");
@@ -82,12 +82,27 @@ export function RustFSExportSection({ app }: Props) {
     }
     setTesting(true);
     try {
-      const res = await api.post<{ success: boolean; message: string }>(`/api/apps/${app.id}/export/s3/test`, formData);
+      const res = await api.post<{ success: boolean; message: string }>(`/apps/${app.id}/export/s3/test`, formData);
       toast.success(res.message || "Conexão com RustFS bem-sucedida!");
     } catch (err: any) {
       toast.error(err.message || "Falha na conexão com o RustFS / S3.");
     } finally {
       setTesting(false);
+    }
+  };
+
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await api.post<{ success: boolean; count: number; message: string }>(`/apps/${app.id}/export/s3/sync`);
+      toast.success(res.message || "Eventos sincronizados com sucesso!");
+      setFormData((prev) => ({ ...prev, lastExportedAt: new Date().toISOString() }));
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao sincronizar eventos com RustFS / S3.");
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -168,10 +183,15 @@ export function RustFSExportSection({ app }: Props) {
             </p>
           )}
 
-          <div className="flex items-center justify-between pt-2">
-            <Button type="button" variant="outline" size="sm" onClick={handleTest} loading={testing}>
-              <IconTestPipe className="h-4 w-4 mr-1.5" /> Testar Conexão RustFS
-            </Button>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={handleTest} loading={testing}>
+                <IconTestPipe className="h-4 w-4 mr-1.5" /> Testar Conexão RustFS
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={handleSync} loading={syncing}>
+                <IconCloudUpload className="h-4 w-4 mr-1.5" /> Sincronizar Eventos
+              </Button>
+            </div>
             <Button type="submit" loading={saving}>
               <IconCheck className="h-4 w-4 mr-1.5" /> Salvar Configuração RustFS
             </Button>

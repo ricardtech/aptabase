@@ -1,6 +1,7 @@
 
 
 using System.Diagnostics;
+using Aptabase.Features.Export;
 using Aptabase.Features.Privacy;
 
 namespace Aptabase.Features.Ingestion.Buffer;
@@ -9,15 +10,17 @@ public class EventBackgroundWritter : BackgroundService
 {
     private readonly IEventBuffer _buffer;
     private readonly IIngestionClient _client;
+    private readonly IS3EventExporter _s3Exporter;
     private readonly ILogger _logger;
     private readonly IUserHasher _hasher;
     private readonly Stopwatch _watch = new();
 
-    public EventBackgroundWritter(IEventBuffer buffer, IUserHasher hasher, IIngestionClient client,  ILogger<EventBackgroundWritter> logger)
+    public EventBackgroundWritter(IEventBuffer buffer, IUserHasher hasher, IIngestionClient client, IS3EventExporter s3Exporter, ILogger<EventBackgroundWritter> logger)
     {
         _hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
         _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
         _client = client ?? throw new ArgumentNullException(nameof(client));
+        _s3Exporter = s3Exporter ?? throw new ArgumentNullException(nameof(s3Exporter));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -60,6 +63,18 @@ public class EventBackgroundWritter : BackgroundService
             await _client.BulkSendEventAsync(rows);
             _watch.Stop();
             _logger.LogInformation("Flushed {Count} events in {TimeMs}ms.", events.Length, _watch.ElapsedMilliseconds);
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _s3Exporter.ExportBatchAsync(rows);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Falha ao gravar lote de eventos no RustFS/S3");
+                }
+            });
         }
         catch (Exception ex)
         {

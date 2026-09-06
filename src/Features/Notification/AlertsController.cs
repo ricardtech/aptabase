@@ -100,39 +100,56 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
     {
         if (string.IsNullOrWhiteSpace(body.WhatsGoUrl) || string.IsNullOrWhiteSpace(body.WhatsGoPhone))
         {
-            return BadRequest(new { success = false, message = "URL do WhatsGo e Telefone de destino são obrigatórios." });
+            return BadRequest(new { success = false, message = "URL da API do WhatsGo e Telefone de destino são obrigatórios." });
         }
 
         try
         {
             var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(10);
+            client.Timeout = TimeSpan.FromSeconds(15);
 
-            var baseUrl = body.WhatsGoUrl.TrimEnd('/');
-            var endpoint = $"{baseUrl}/message/sendText/{body.WhatsGoInstance ?? "default"}";
+            var baseUrl = body.WhatsGoUrl.Trim().TrimEnd('/');
+            var instance = string.IsNullOrWhiteSpace(body.WhatsGoInstance) ? "default" : body.WhatsGoInstance.Trim();
+            var phone = body.WhatsGoPhone.Replace("+", "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Trim();
+
+            var endpoint = $"{baseUrl}/message/sendText/{instance}";
+            var token = body.WhatsGoToken?.Trim();
 
             var payload = new
             {
-                number = body.WhatsGoPhone.Replace("+", "").Replace(" ", "").Replace("-", ""),
-                text = "🔔 *Aptabase v2.0.8 - Teste de Alerta WhatsGo*\n\nConexão com a API do WhatsGo realizada com sucesso! Você receberá alertas em tempo real sobre erros críticos e o resumo diário de telemetria."
+                number = phone,
+                text = "🔔 *Aptabase - Teste de Alerta WhatsGo*\n\nConexão com a API do WhatsGo realizada com sucesso!\nVocê receberá notificações instantâneas sobre erros críticos e o resumo diário de telemetria.",
+                textMessage = new
+                {
+                    text = "🔔 *Aptabase - Teste de Alerta WhatsGo*\n\nConexão com a API do WhatsGo realizada com sucesso!\nVocê receberá notificações instantâneas sobre erros críticos e o resumo diário de telemetria."
+                },
+                options = new
+                {
+                    delay = 1200,
+                    presence = "composing",
+                    linkPreview = false
+                }
             };
 
             using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
-            if (!string.IsNullOrWhiteSpace(body.WhatsGoToken))
+            if (!string.IsNullOrWhiteSpace(token))
             {
-                request.Headers.Add("apikey", body.WhatsGoToken);
-                request.Headers.Add("Authorization", $"Bearer {body.WhatsGoToken}");
+                request.Headers.TryAddWithoutValidation("apikey", token);
+                request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token}");
             }
             request.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
 
             var response = await client.SendAsync(request);
+            var responseText = await response.Content.ReadAsStringAsync();
+
+            _logger.LogInformation("WhatsGo test response: Status={StatusCode}, Body={Body}", response.StatusCode, responseText);
+
             if (response.IsSuccessStatusCode)
             {
-                return Ok(new { success = true, message = "Mensagem de teste enviada com sucesso via WhatsGo!" });
+                return Ok(new { success = true, message = "Mensagem de teste enviada com sucesso para o WhatsApp!" });
             }
 
-            var errorBody = await response.Content.ReadAsStringAsync();
-            return BadRequest(new { success = false, message = $"WhatsGo API respondeu com status {(int)response.StatusCode}: {errorBody}" });
+            return BadRequest(new { success = false, message = $"WhatsGo API retornou status {(int)response.StatusCode}: {responseText}" });
         }
         catch (Exception ex)
         {
@@ -152,27 +169,52 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
         try
         {
             var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(10);
+            client.Timeout = TimeSpan.FromSeconds(15);
 
-            var endpoint = $"https://api.telegram.org/bot{body.TelegramBotToken}/sendMessage";
+            var rawToken = body.TelegramBotToken.Trim();
+            var cleanToken = rawToken.StartsWith("bot", StringComparison.OrdinalIgnoreCase) ? rawToken[3..] : rawToken;
+            var chatId = body.TelegramChatId.Trim();
+
+            var endpoint = $"https://api.telegram.org/bot{cleanToken}/sendMessage";
             var payload = new
             {
-                chat_id = body.TelegramChatId,
-                text = "🔔 *Aptabase v2.0.8 - Teste de Alerta Telegram*\n\nConexão com o Bot do Telegram realizada com sucesso! Você receberá alertas de erros e métricas diárias.",
-                parse_mode = "Markdown"
+                chat_id = chatId,
+                text = "🔔 <b>Aptabase - Teste de Alerta Telegram</b>\n\nConexão com o Bot do Telegram realizada com sucesso!\nVocê receberá notificações instantâneas sobre erros críticos e o resumo diário de telemetria.",
+                parse_mode = "HTML"
             };
 
             using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
             request.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
 
             var response = await client.SendAsync(request);
-            if (response.IsSuccessStatusCode)
+            var responseText = await response.Content.ReadAsStringAsync();
+
+            _logger.LogInformation("Telegram test response: Status={StatusCode}, Body={Body}", response.StatusCode, responseText);
+
+            try
             {
-                return Ok(new { success = true, message = "Mensagem de teste enviada com sucesso via Telegram!" });
+                using var jsonDoc = JsonDocument.Parse(responseText);
+                if (jsonDoc.RootElement.TryGetProperty("ok", out var okProp) && okProp.GetBoolean())
+                {
+                    return Ok(new { success = true, message = "Mensagem de teste enviada com sucesso para o Telegram!" });
+                }
+
+                if (jsonDoc.RootElement.TryGetProperty("description", out var descProp))
+                {
+                    return BadRequest(new { success = false, message = $"Telegram API recusou o envio: {descProp.GetString()}" });
+                }
+            }
+            catch
+            {
+                // fallback
             }
 
-            var errorBody = await response.Content.ReadAsStringAsync();
-            return BadRequest(new { success = false, message = $"Telegram API respondeu com status {(int)response.StatusCode}: {errorBody}" });
+            if (response.IsSuccessStatusCode)
+            {
+                return Ok(new { success = true, message = "Mensagem de teste enviada com sucesso para o Telegram!" });
+            }
+
+            return BadRequest(new { success = false, message = $"Telegram API retornou status {(int)response.StatusCode}: {responseText}" });
         }
         catch (Exception ex)
         {

@@ -34,7 +34,10 @@ type ValidationError = {
 };
 
 async function _fetch(method: string, path: string, body?: any): Promise<[number, Response]> {
-  const response = await window.fetch(`/api${path}`, {
+  const normalizedPath = path.startsWith("/api/") ? path.substring(4) : path.startsWith("/api") ? path.substring(4) : path;
+  const targetUrl = `/api${normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`}`;
+
+  const response = await window.fetch(targetUrl, {
     ...(method === "GET" ? commonHeaders : mutatingHeaders),
     method,
     body: body ? JSON.stringify(body) : undefined,
@@ -50,28 +53,36 @@ async function get<T>(path: string, params?: Record<string, any>): Promise<T> {
   const [status, response] = await _fetch("GET", pathWithParams);
 
   await handleError(status, response);
-  return await response?.json();
+  if (response.status === 204) return null as T;
+  const text = await response.text();
+  return text ? (JSON.parse(text) as T) : (null as T);
 }
 
 async function post<T>(path: string, body?: any): Promise<T> {
   const [status, response] = await _fetch("POST", path, body);
 
   await handleError(status, response);
-  return response.json() as Promise<T>;
+  if (response.status === 204) return null as T;
+  const text = await response.text();
+  return text ? (JSON.parse(text) as T) : (null as T);
 }
 
 async function put<T>(path: string, body?: any): Promise<T> {
   const [status, response] = await _fetch("PUT", path, body);
 
   await handleError(status, response);
-  return response.json() as Promise<T>;
+  if (response.status === 204) return null as T;
+  const text = await response.text();
+  return text ? (JSON.parse(text) as T) : (null as T);
 }
 
 async function _delete<T>(path: string): Promise<T> {
   const [status, response] = await _fetch("DELETE", path);
 
   await handleError(status, response);
-  return response.json() as Promise<T>;
+  if (response.status === 204) return null as T;
+  const text = await response.text();
+  return text ? (JSON.parse(text) as T) : (null as T);
 }
 
 async function getEmpty<T>(path: string, params?: Record<string, any>): Promise<T | null> {
@@ -81,7 +92,9 @@ async function getEmpty<T>(path: string, params?: Record<string, any>): Promise<
   const [status, response] = await _fetch("GET", pathWithParams);
 
   await handleError(status, response);
-  return response.status === 204 ? null : ((await response?.json()) as Promise<T>);
+  if (response.status === 204) return null;
+  const text = await response.text();
+  return text ? (JSON.parse(text) as T) : null;
 }
 
 export const api = {

@@ -48,7 +48,7 @@ export function AlertSettings({ app }: Props) {
   useEffect(() => {
     async function loadSettings() {
       try {
-        const data = await api.get<AlertSettingsData>(`/api/apps/${app.id}/alerts`);
+        const data = await api.get<AlertSettingsData>(`/apps/${app.id}/alerts`);
         if (data) {
           setFormData({
             appId: app.id,
@@ -77,7 +77,7 @@ export function AlertSettings({ app }: Props) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.put(`/api/apps/${app.id}/alerts`, formData);
+      await api.put(`/apps/${app.id}/alerts`, formData);
       toast.success("Configurações de alerta salvas com sucesso!");
     } catch (err: any) {
       toast.error(err.message || "Erro ao salvar configurações.");
@@ -93,7 +93,7 @@ export function AlertSettings({ app }: Props) {
     }
     setTestingWhatsGo(true);
     try {
-      const res = await api.post<{ success: boolean; message: string }>(`/api/apps/${app.id}/alerts/test-whatsgo`, formData);
+      const res = await api.post<{ success: boolean; message: string }>(`/apps/${app.id}/alerts/test-whatsgo`, formData);
       toast.success(res.message || "Mensagem enviada com sucesso!");
     } catch (err: any) {
       toast.error(err.message || "Falha ao enviar mensagem pelo WhatsGo.");
@@ -109,7 +109,7 @@ export function AlertSettings({ app }: Props) {
     }
     setTestingTelegram(true);
     try {
-      const res = await api.post<{ success: boolean; message: string }>(`/api/apps/${app.id}/alerts/test-telegram`, formData);
+      const res = await api.post<{ success: boolean; message: string }>(`/apps/${app.id}/alerts/test-telegram`, formData);
       toast.success(res.message || "Mensagem enviada com sucesso!");
     } catch (err: any) {
       toast.error(err.message || "Falha ao enviar mensagem pelo Telegram.");

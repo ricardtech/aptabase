@@ -89,21 +89,28 @@ public class AlertBackgroundService(
                     string errType = firstErr.name ?? firstErr.type ?? "Critical Error";
                     string errMessage = firstErr.message ?? "Erro detectado no aplicativo.";
 
-                    string alertText = $"🚨 *ALERTA DE ERRO NO APP: {appName}*\n\n" +
-                                       $"*Tipo:* `{errType}`\n" +
-                                       $"*Mensagem:* {errMessage}\n" +
-                                       $"*Ocorrências recentes:* {errorList.Count} nos últimos 5 min.\n" +
-                                       $"*Data/Hora:* {DateTime.UtcNow:dd/MM/yyyy HH:mm:ss} UTC\n\n" +
-                                       $"Acesse seu painel Aptabase para mais detalhes.";
+                    string whatsGoText = $"🚨 *ALERTA DE ERRO NO APP: {appName}*\n\n" +
+                                         $"*Tipo:* `{errType}`\n" +
+                                         $"*Mensagem:* {errMessage}\n" +
+                                         $"*Ocorrências recentes:* {errorList.Count} nos últimos 5 min.\n" +
+                                         $"*Data/Hora:* {DateTime.UtcNow:dd/MM/yyyy HH:mm:ss} UTC\n\n" +
+                                         $"Acesse seu painel Aptabase para mais detalhes.";
+
+                    string telegramText = $"🚨 <b>ALERTA DE ERRO NO APP: {appName}</b>\n\n" +
+                                          $"<b>Tipo:</b> <code>{errType}</code>\n" +
+                                          $"<b>Mensagem:</b> {errMessage}\n" +
+                                          $"<b>Ocorrências recentes:</b> {errorList.Count} nos últimos 5 min.\n" +
+                                          $"<b>Data/Hora:</b> {DateTime.UtcNow:dd/MM/yyyy HH:mm:ss} UTC\n\n" +
+                                          $"Acesse seu painel Aptabase para mais detalhes.";
 
                     if ((bool)s.whatsgoenabled && !string.IsNullOrWhiteSpace((string)s.whatsgourl) && !string.IsNullOrWhiteSpace((string)s.whatsgophone))
                     {
-                        await SendWhatsGoAsync((string)s.whatsgourl, (string)s.whatsgoinstance, (string)s.whatsgotoken, (string)s.whatsgophone, alertText);
+                        await SendWhatsGoAsync((string)s.whatsgourl, (string)s.whatsgoinstance, (string)s.whatsgotoken, (string)s.whatsgophone, whatsGoText);
                     }
 
                     if ((bool)s.telegramenabled && !string.IsNullOrWhiteSpace((string)s.telegrambottoken) && !string.IsNullOrWhiteSpace((string)s.telegramchatid))
                     {
-                        await SendTelegramAsync((string)s.telegrambottoken, (string)s.telegramchatid, alertText);
+                        await SendTelegramAsync((string)s.telegrambottoken, (string)s.telegramchatid, telegramText);
                     }
                 }
             }
@@ -123,7 +130,6 @@ public class AlertBackgroundService(
 
             using var scope = _scopeFactory.CreateScope();
             var dataSource = scope.ServiceProvider.GetRequiredService<NpgsqlDataSource>();
-            var queryClient = scope.ServiceProvider.GetRequiredService<IQueryClient>();
 
             await using var conn = await dataSource.OpenConnectionAsync(cancellationToken);
             const string sql = @"
@@ -148,19 +154,24 @@ public class AlertBackgroundService(
 
                 try
                 {
-                    string summaryText = $"📊 *Resumo Diário Aptabase - {appName}*\n" +
-                                         $"*Data:* {now:dd/MM/yyyy}\n\n" +
-                                         $"Seu aplicativo está ativo e recebendo telemetria com sucesso!\n" +
-                                         $"Consulte o painel web para analisar métricas detalhadas de usuários e sessões.";
+                    string whatsGoSummary = $"📊 *Resumo Diário Aptabase - {appName}*\n" +
+                                            $"*Data:* {now:dd/MM/yyyy}\n\n" +
+                                            $"Seu aplicativo está ativo e recebendo telemetria com sucesso!\n" +
+                                            $"Consulte o painel web para analisar métricas detalhadas de usuários e sessões.";
+
+                    string telegramSummary = $"📊 <b>Resumo Diário Aptabase - {appName}</b>\n" +
+                                             $"<b>Data:</b> {now:dd/MM/yyyy}\n\n" +
+                                             $"Seu aplicativo está ativo e recebendo telemetria com sucesso!\n" +
+                                             $"Consulte o painel web para analisar métricas detalhadas de usuários e sessões.";
 
                     if ((bool)s.whatsgoenabled && !string.IsNullOrWhiteSpace((string)s.whatsgourl) && !string.IsNullOrWhiteSpace((string)s.whatsgophone))
                     {
-                        await SendWhatsGoAsync((string)s.whatsgourl, (string)s.whatsgoinstance, (string)s.whatsgotoken, (string)s.whatsgophone, summaryText);
+                        await SendWhatsGoAsync((string)s.whatsgourl, (string)s.whatsgoinstance, (string)s.whatsgotoken, (string)s.whatsgophone, whatsGoSummary);
                     }
 
                     if ((bool)s.telegramenabled && !string.IsNullOrWhiteSpace((string)s.telegrambottoken) && !string.IsNullOrWhiteSpace((string)s.telegramchatid))
                     {
-                        await SendTelegramAsync((string)s.telegrambottoken, (string)s.telegramchatid, summaryText);
+                        await SendTelegramAsync((string)s.telegrambottoken, (string)s.telegramchatid, telegramSummary);
                     }
                 }
                 catch (Exception ex)
@@ -176,19 +187,25 @@ public class AlertBackgroundService(
         try
         {
             var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(10);
-            var endpoint = $"{url.TrimEnd('/')}/message/sendText/{instance ?? "default"}";
+            client.Timeout = TimeSpan.FromSeconds(15);
+            var baseUrl = url.Trim().TrimEnd('/');
+            var inst = string.IsNullOrWhiteSpace(instance) ? "default" : instance.Trim();
+            var endpoint = $"{baseUrl}/message/sendText/{inst}";
+            var cleanPhone = phone.Replace("+", "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Trim();
+
             var payload = new
             {
-                number = phone.Replace("+", "").Replace(" ", "").Replace("-", ""),
-                text = message
+                number = cleanPhone,
+                text = message,
+                textMessage = new { text = message },
+                options = new { delay = 1200, presence = "composing", linkPreview = false }
             };
 
             using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
             if (!string.IsNullOrWhiteSpace(token))
             {
-                req.Headers.Add("apikey", token);
-                req.Headers.Add("Authorization", $"Bearer {token}");
+                req.Headers.TryAddWithoutValidation("apikey", token.Trim());
+                req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token.Trim()}");
             }
             req.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
             await client.SendAsync(req);
@@ -204,13 +221,17 @@ public class AlertBackgroundService(
         try
         {
             var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(10);
-            var endpoint = $"https://api.telegram.org/bot{token}/sendMessage";
+            client.Timeout = TimeSpan.FromSeconds(15);
+            var rawToken = token.Trim();
+            var cleanToken = rawToken.StartsWith("bot", StringComparison.OrdinalIgnoreCase) ? rawToken[3..] : rawToken;
+            var cleanChatId = chatId.Trim();
+
+            var endpoint = $"https://api.telegram.org/bot{cleanToken}/sendMessage";
             var payload = new
             {
-                chat_id = chatId,
+                chat_id = cleanChatId,
                 text = message,
-                parse_mode = "Markdown"
+                parse_mode = "HTML"
             };
 
             using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);

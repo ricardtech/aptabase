@@ -23,9 +23,10 @@ public class S3ExportSettingsDto
 
 [ApiController, IsAuthenticated, HasReadAccessToApp]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class S3ExportController(NpgsqlDataSource dataSource, ILogger<S3ExportController> logger) : Controller
+public class S3ExportController(NpgsqlDataSource dataSource, IS3EventExporter s3Exporter, ILogger<S3ExportController> logger) : Controller
 {
     private readonly NpgsqlDataSource _dataSource = dataSource;
+    private readonly IS3EventExporter _s3Exporter = s3Exporter;
     private readonly ILogger<S3ExportController> _logger = logger;
 
     [HttpGet("/api/apps/{appId}/export/s3")]
@@ -111,7 +112,6 @@ public class S3ExportController(NpgsqlDataSource dataSource, ILogger<S3ExportCon
                 Key = testKey,
                 ContentBody = JsonSerializer.Serialize(new {
                     service = "Aptabase",
-                    version = "v2.0.8",
                     test = "RustFS / S3 Export Test",
                     timestamp = DateTime.UtcNow
                 })
@@ -129,5 +129,20 @@ public class S3ExportController(NpgsqlDataSource dataSource, ILogger<S3ExportCon
             _logger.LogError(ex, "Erro ao testar conexão S3/RustFS para app {AppId}", appId);
             return BadRequest(new { success = false, message = $"Falha na conexão com S3/RustFS: {ex.Message}" });
         }
+    }
+
+    [HttpPost("/api/apps/{appId}/export/s3/sync")]
+    public async Task<IActionResult> SyncEvents([FromRoute] string appId, [FromQuery] int? days = 7)
+    {
+        var from = DateTime.UtcNow.AddDays(-(days ?? 7));
+        var to = DateTime.UtcNow;
+
+        var result = await _s3Exporter.SyncAppEventsAsync(appId, from, to, HttpContext.RequestAborted);
+        if (!result.success)
+        {
+            return BadRequest(new { success = false, message = result.message });
+        }
+
+        return Ok(new { success = true, count = result.count, message = result.message });
     }
 }
