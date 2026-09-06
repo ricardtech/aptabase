@@ -27,6 +27,9 @@ RUN bun run build
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
+ENV TZ=America/Sao_Paulo
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+
 COPY --from=server /work/publish .
 COPY --from=webapp /work/wwwroot ./wwwroot
 COPY LICENSE .

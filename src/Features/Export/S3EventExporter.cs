@@ -80,7 +80,8 @@ public class S3EventExporter(
                     sb.AppendLine(sw.ToString());
                 }
 
-                var key = $"raw-events/{appId}/{DateTime.UtcNow:yyyy/MM/dd/HH}/events_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N[..6]}.ndjson";
+                var suffix = Guid.NewGuid().ToString("N")[..6];
+                var key = $"raw-events/{appId}/{DateTime.UtcNow:yyyy/MM/dd/HH}/events_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{suffix}.ndjson";
 
                 var putRequest = new PutObjectRequest
                 {
@@ -90,7 +91,15 @@ public class S3EventExporter(
                     ContentType = "application/x-ndjson"
                 };
 
-                await s3Client.PutObjectAsync(putRequest, cancellationToken);
+                try
+                {
+                    await s3Client.PutObjectAsync(putRequest, cancellationToken);
+                }
+                catch (AmazonS3Exception s3Ex) when (s3Ex.ErrorCode == "NoSuchBucket")
+                {
+                    await s3Client.PutBucketAsync(settings.S3Bucket.Trim(), cancellationToken);
+                    await s3Client.PutObjectAsync(putRequest, cancellationToken);
+                }
 
                 await UpdateLastExportedAtAsync(appId, cancellationToken);
 
@@ -142,7 +151,8 @@ public class S3EventExporter(
 
             using var s3Client = new AmazonS3Client(settings.S3AccessKey?.Trim(), settings.S3SecretKey?.Trim(), config);
 
-            var key = $"raw-events/{appId}/sync/events_{from:yyyyMMdd_HHmmss}_to_{to:yyyyMMdd_HHmmss}_{Guid.NewGuid():N[..6]}.ndjson";
+            var suffix = Guid.NewGuid().ToString("N")[..6];
+            var key = $"raw-events/{appId}/sync/events_{from:yyyyMMdd_HHmmss}_to_{to:yyyyMMdd_HHmmss}_{suffix}.ndjson";
 
             var putRequest = new PutObjectRequest
             {
@@ -152,7 +162,15 @@ public class S3EventExporter(
                 ContentType = "application/x-ndjson"
             };
 
-            await s3Client.PutObjectAsync(putRequest, cancellationToken);
+            try
+            {
+                await s3Client.PutObjectAsync(putRequest, cancellationToken);
+            }
+            catch (AmazonS3Exception s3Ex) when (s3Ex.ErrorCode == "NoSuchBucket")
+            {
+                await s3Client.PutBucketAsync(settings.S3Bucket.Trim(), cancellationToken);
+                await s3Client.PutObjectAsync(putRequest, cancellationToken);
+            }
 
             await UpdateLastExportedAtAsync(appId, cancellationToken);
 

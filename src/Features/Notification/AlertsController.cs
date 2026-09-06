@@ -112,8 +112,10 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
             var instance = string.IsNullOrWhiteSpace(body.WhatsGoInstance) ? "default" : body.WhatsGoInstance.Trim();
             var phone = body.WhatsGoPhone.Replace("+", "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Trim();
 
-            var endpoint = $"{baseUrl}/message/sendText/{instance}";
             var token = body.WhatsGoToken?.Trim();
+            var endpoint = !string.IsNullOrWhiteSpace(token)
+                ? $"{baseUrl}/message/sendText/{instance}?apikey={Uri.EscapeDataString(token)}"
+                : $"{baseUrl}/message/sendText/{instance}";
 
             var payload = new
             {
@@ -135,7 +137,8 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
             if (!string.IsNullOrWhiteSpace(token))
             {
                 request.Headers.TryAddWithoutValidation("apikey", token);
-                request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token}");
+                request.Headers.TryAddWithoutValidation("apiKey", token);
+                request.Headers.TryAddWithoutValidation("token", token);
             }
             request.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
 
@@ -169,7 +172,7 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
         try
         {
             var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(15);
+            client.Timeout = TimeSpan.FromSeconds(30);
 
             var rawToken = body.TelegramBotToken.Trim();
             var cleanToken = rawToken.StartsWith("bot", StringComparison.OrdinalIgnoreCase) ? rawToken[3..] : rawToken;

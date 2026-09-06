@@ -105,12 +105,13 @@ public class S3ExportController(NpgsqlDataSource dataSource, IS3EventExporter s3
                 AuthenticationRegion = string.IsNullOrWhiteSpace(body.S3Region) ? "us-east-1" : body.S3Region
             };
 
-            using var s3Client = new AmazonS3Client(body.S3AccessKey, body.S3SecretKey, config);
+            using var s3Client = new AmazonS3Client(body.S3AccessKey?.Trim(), body.S3SecretKey?.Trim(), config);
 
-            var testKey = $"aptabase-test-{DateTime.UtcNow:yyyyMMddHHmmss}.json";
+            var bucketName = body.S3Bucket.Trim();
+            var testKey = $"aptabase-test-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6]}.json";
             var putRequest = new PutObjectRequest
             {
-                BucketName = body.S3Bucket,
+                BucketName = bucketName,
                 Key = testKey,
                 ContentBody = JsonSerializer.Serialize(new {
                     service = "Aptabase",
@@ -119,10 +120,18 @@ public class S3ExportController(NpgsqlDataSource dataSource, IS3EventExporter s3
                 })
             };
 
-            await s3Client.PutObjectAsync(putRequest);
+            try
+            {
+                await s3Client.PutObjectAsync(putRequest);
+            }
+            catch (AmazonS3Exception s3Ex) when (s3Ex.ErrorCode == "NoSuchBucket")
+            {
+                await s3Client.PutBucketAsync(bucketName);
+                await s3Client.PutObjectAsync(putRequest);
+            }
 
             // Clean up test file
-            await s3Client.DeleteObjectAsync(body.S3Bucket, testKey);
+            await s3Client.DeleteObjectAsync(bucketName, testKey);
 
             return Ok(new { success = true, message = "Conexão com RustFS / S3 testada com sucesso! Gravação e leitura validadas." });
         }

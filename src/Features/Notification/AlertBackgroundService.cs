@@ -123,18 +123,20 @@ public class AlertBackgroundService(
                     string errType = firstErr.ErrorType ?? "Erro de Aplicativo";
                     string errMessage = firstErr.ErrorMessage ?? "Falha detectada no aplicativo.";
 
+                    var brTime = DateTime.UtcNow.AddHours(-3);
+
                     string whatsGoText = $"🚨 *ALERTA DE ERRO NO APP: {appName}*\n\n" +
                                          $"*Tipo:* `{errType}`\n" +
                                          $"*Mensagem:* {errMessage}\n" +
                                          $"*Ocorrências recentes:* {errorList.Count} nos últimos 10 min.\n" +
-                                         $"*Data/Hora:* {DateTime.UtcNow:dd/MM/yyyy HH:mm:ss} UTC\n\n" +
+                                         $"*Data/Hora:* {brTime:dd/MM/yyyy HH:mm:ss} (Horário de Brasília)\n\n" +
                                          $"Acesse seu painel Aptabase para mais detalhes.";
 
                     string telegramText = $"🚨 <b>ALERTA DE ERRO NO APP: {appName}</b>\n\n" +
                                           $"<b>Tipo:</b> <code>{errType}</code>\n" +
                                           $"<b>Mensagem:</b> {errMessage}\n" +
                                           $"<b>Ocorrências recentes:</b> {errorList.Count} nos últimos 10 min.\n" +
-                                          $"<b>Data/Hora:</b> {DateTime.UtcNow:dd/MM/yyyy HH:mm:ss} UTC\n\n" +
+                                          $"<b>Data/Hora:</b> {brTime:dd/MM/yyyy HH:mm:ss} (Horário de Brasília)\n\n" +
                                           $"Acesse seu painel Aptabase para mais detalhes.";
 
                     if (s.WhatsGoEnabled && !string.IsNullOrWhiteSpace(s.WhatsGoUrl) && !string.IsNullOrWhiteSpace(s.WhatsGoPhone))
@@ -221,10 +223,13 @@ public class AlertBackgroundService(
         try
         {
             var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(15);
+            client.Timeout = TimeSpan.FromSeconds(30);
             var baseUrl = url.Trim().TrimEnd('/');
             var inst = string.IsNullOrWhiteSpace(instance) ? "default" : instance.Trim();
-            var endpoint = $"{baseUrl}/message/sendText/{inst}";
+            var cleanToken = token?.Trim();
+            var endpoint = !string.IsNullOrWhiteSpace(cleanToken)
+                ? $"{baseUrl}/message/sendText/{inst}?apikey={Uri.EscapeDataString(cleanToken)}"
+                : $"{baseUrl}/message/sendText/{inst}";
             var cleanPhone = phone.Replace("+", "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Trim();
 
             var payload = new
@@ -236,10 +241,11 @@ public class AlertBackgroundService(
             };
 
             using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
-            if (!string.IsNullOrWhiteSpace(token))
+            if (!string.IsNullOrWhiteSpace(cleanToken))
             {
-                req.Headers.TryAddWithoutValidation("apikey", token.Trim());
-                req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token.Trim()}");
+                req.Headers.TryAddWithoutValidation("apikey", cleanToken);
+                req.Headers.TryAddWithoutValidation("apiKey", cleanToken);
+                req.Headers.TryAddWithoutValidation("token", cleanToken);
             }
             req.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
             var response = await client.SendAsync(req);
@@ -256,7 +262,7 @@ public class AlertBackgroundService(
         try
         {
             var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(15);
+            client.Timeout = TimeSpan.FromSeconds(30);
             var rawToken = token.Trim();
             var cleanToken = rawToken.StartsWith("bot", StringComparison.OrdinalIgnoreCase) ? rawToken[3..] : rawToken;
             var cleanChatId = chatId.Trim();
