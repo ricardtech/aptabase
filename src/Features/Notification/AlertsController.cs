@@ -113,17 +113,24 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
             var phone = body.WhatsGoPhone.Replace("+", "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Trim();
 
             var token = body.WhatsGoToken?.Trim();
+            var encodedToken = !string.IsNullOrWhiteSpace(token) ? Uri.EscapeDataString(token) : "";
             var endpoint = !string.IsNullOrWhiteSpace(token)
-                ? $"{baseUrl}/message/sendText/{instance}?apikey={Uri.EscapeDataString(token)}"
+                ? $"{baseUrl}/message/sendText/{instance}?apikey={encodedToken}&apiKey={encodedToken}&x-api-key={encodedToken}&token={encodedToken}"
                 : $"{baseUrl}/message/sendText/{instance}";
+
+            var messageContent = "🔔 *Aptabase - Teste de Alerta WhatsGo*\n\nConexão com a API do WhatsGo realizada com sucesso!\nVocê receberá notificações instantâneas sobre erros críticos e o resumo diário de telemetria.";
 
             var payload = new
             {
                 number = phone,
-                text = "🔔 *Aptabase - Teste de Alerta WhatsGo*\n\nConexão com a API do WhatsGo realizada com sucesso!\nVocê receberá notificações instantâneas sobre erros críticos e o resumo diário de telemetria.",
+                recipient = phone,
+                to = phone,
+                phone = phone,
+                text = messageContent,
+                message = messageContent,
                 textMessage = new
                 {
-                    text = "🔔 *Aptabase - Teste de Alerta WhatsGo*\n\nConexão com a API do WhatsGo realizada com sucesso!\nVocê receberá notificações instantâneas sobre erros críticos e o resumo diário de telemetria."
+                    text = messageContent
                 },
                 options = new
                 {
@@ -138,7 +145,12 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
             {
                 request.Headers.TryAddWithoutValidation("apikey", token);
                 request.Headers.TryAddWithoutValidation("apiKey", token);
+                request.Headers.TryAddWithoutValidation("x-api-key", token);
+                request.Headers.TryAddWithoutValidation("X-API-KEY", token);
+                request.Headers.TryAddWithoutValidation("X-Api-Key", token);
                 request.Headers.TryAddWithoutValidation("token", token);
+                request.Headers.TryAddWithoutValidation("X-Auth-Token", token);
+                request.Headers.TryAddWithoutValidation("Authorization", token);
             }
             request.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
 

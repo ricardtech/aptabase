@@ -227,15 +227,20 @@ public class AlertBackgroundService(
             var baseUrl = url.Trim().TrimEnd('/');
             var inst = string.IsNullOrWhiteSpace(instance) ? "default" : instance.Trim();
             var cleanToken = token?.Trim();
+            var encodedToken = !string.IsNullOrWhiteSpace(cleanToken) ? Uri.EscapeDataString(cleanToken) : "";
             var endpoint = !string.IsNullOrWhiteSpace(cleanToken)
-                ? $"{baseUrl}/message/sendText/{inst}?apikey={Uri.EscapeDataString(cleanToken)}"
+                ? $"{baseUrl}/message/sendText/{inst}?apikey={encodedToken}&apiKey={encodedToken}&x-api-key={encodedToken}&token={encodedToken}"
                 : $"{baseUrl}/message/sendText/{inst}";
             var cleanPhone = phone.Replace("+", "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Trim();
 
             var payload = new
             {
                 number = cleanPhone,
+                recipient = cleanPhone,
+                to = cleanPhone,
+                phone = cleanPhone,
                 text = message,
+                message = message,
                 textMessage = new { text = message },
                 options = new { delay = 1200, presence = "composing", linkPreview = false }
             };
@@ -245,7 +250,12 @@ public class AlertBackgroundService(
             {
                 req.Headers.TryAddWithoutValidation("apikey", cleanToken);
                 req.Headers.TryAddWithoutValidation("apiKey", cleanToken);
+                req.Headers.TryAddWithoutValidation("x-api-key", cleanToken);
+                req.Headers.TryAddWithoutValidation("X-API-KEY", cleanToken);
+                req.Headers.TryAddWithoutValidation("X-Api-Key", cleanToken);
                 req.Headers.TryAddWithoutValidation("token", cleanToken);
+                req.Headers.TryAddWithoutValidation("X-Auth-Token", cleanToken);
+                req.Headers.TryAddWithoutValidation("Authorization", cleanToken);
             }
             req.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
             var response = await client.SendAsync(req);
