@@ -2,6 +2,7 @@ import { Page, PageHeading } from "@components/Page";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Tabs";
 import { useCurrentApp } from "@features/apps";
 import { Navigate } from "react-router-dom";
+import { AlertSettings } from "./AlertSettings";
 import { AppSharing } from "./AppSharing";
 import { DangerZone } from "./DangerZone";
 import { GeneralSettings } from "./GeneralSettings";
@@ -20,12 +21,16 @@ export function Component() {
       <Tabs defaultValue="general" className="mt-8">
         <TabsList>
           <TabsTrigger value="general">Geral</TabsTrigger>
+          <TabsTrigger value="alerts">Alertas e Notificações</TabsTrigger>
           <TabsTrigger value="sharing">Compartilhamento</TabsTrigger>
           <TabsTrigger value="ownership">Transferência de Propriedade</TabsTrigger>
           <TabsTrigger value="danger">Zona de Perigo</TabsTrigger>
         </TabsList>
         <TabsContent value="general">
           <GeneralSettings app={app} />
+        </TabsContent>
+        <TabsContent value="alerts">
+          <AlertSettings app={app} />
         </TabsContent>
         <TabsContent value="sharing">
           <AppSharing app={app} />

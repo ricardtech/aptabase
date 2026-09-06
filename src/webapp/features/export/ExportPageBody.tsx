@@ -9,6 +9,7 @@ import { ToolsList } from "./ToolsList";
 import { DevelopmentNotice } from "./DevelopmentNotice";
 import { ToggleGroup, ToggleGroupList, ToggleGroupTrigger } from "@components/ToggleGroup";
 import { FormatPicker } from "./FormatPicker";
+import { RustFSExportSection } from "./RustFSExportSection";
 import { useState } from "react";
 
 type Props = {
@@ -91,6 +92,8 @@ export function ExportPageBody(props: Props) {
           format={format}
         />
       ))}
+
+      <RustFSExportSection app={props.app} />
 
       <ToolsList />
     </div>

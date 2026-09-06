@@ -182,6 +182,7 @@ public partial class Program
         if (appEnv.ErrorQuotaEnabled)
             builder.Services.AddHostedService<ResetErrorCountCronJob>();
         builder.Services.AddHostedService<PurgeDailySaltsCronJob>();
+        builder.Services.AddHostedService<AlertBackgroundService>();
 
         if (appEnv.IsBillingEnabled)
         {

@@ -5,8 +5,8 @@ FROM (
 SELECT session_id,
  max(max_timestamp) AS timestamp,
  any(user_id) AS user_id,
- any(country_code) AS country_code,
- any(region_name) AS region_name
+ argMaxMerge(country_code) AS country_code,
+ argMaxMerge(region_name) AS region_name
 FROM sessions_live_v1
 WHERE app_id = '{{app_id}}'
 GROUP BY session_id
