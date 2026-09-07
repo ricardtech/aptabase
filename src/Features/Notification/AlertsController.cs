@@ -111,12 +111,21 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
             var baseUrl = body.WhatsGoUrl.Trim().TrimEnd('/');
             var instance = string.IsNullOrWhiteSpace(body.WhatsGoInstance) ? "default" : body.WhatsGoInstance.Trim();
             var phone = body.WhatsGoPhone.Replace("+", "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Trim();
-            var token = body.WhatsGoToken?.Trim();
+            var token = body.WhatsGoToken?.Trim().Trim('"', '\'');
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                await using var conn = await _dataSource.OpenConnectionAsync();
+                token = await conn.QuerySingleOrDefaultAsync<string>("SELECT whatsgo_token FROM app_alert_settings WHERE app_id = @appId", new { appId });
+                token = token?.Trim().Trim('"', '\'');
+            }
 
+            var encodedToken = !string.IsNullOrWhiteSpace(token) ? Uri.EscapeDataString(token) : "";
             var endpointsToTry = new[]
             {
                 $"{baseUrl}/v1/message/sendText",
+                $"{baseUrl}/v1/message/sendText?apikey={encodedToken}&apiKey={encodedToken}",
                 $"{baseUrl}/message/sendText/{instance}",
+                $"{baseUrl}/message/sendText/{instance}?apikey={encodedToken}&apiKey={encodedToken}",
                 $"{baseUrl}/message/sendText"
             };
 
@@ -127,6 +136,10 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
                 instance = instance,
                 to = phone,
                 text = messageContent,
+                apikey = token,
+                apiKey = token,
+                token = token,
+                key = token,
                 number = phone,
                 phone = phone,
                 recipient = phone,
@@ -156,6 +169,8 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
                     request.Headers.TryAddWithoutValidation("apikey", token);
                     request.Headers.TryAddWithoutValidation("apiKey", token);
                     request.Headers.TryAddWithoutValidation("token", token);
+                    request.Headers.TryAddWithoutValidation("X-Auth-Token", token);
+                    request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token}");
                 }
                 request.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
 
@@ -172,8 +187,10 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
                 lastResponse = response;
                 lastResponseText = responseText;
 
-                // If not a 404 route not found, don't keep trying alternative endpoints if it was e.g. bad phone
-                if (response.StatusCode != System.Net.HttpStatusCode.NotFound && response.StatusCode != System.Net.HttpStatusCode.MethodNotAllowed)
+                // Continue trying other endpoints if 404, 405, or 401
+                if (response.StatusCode != System.Net.HttpStatusCode.NotFound && 
+                    response.StatusCode != System.Net.HttpStatusCode.MethodNotAllowed &&
+                    response.StatusCode != System.Net.HttpStatusCode.Unauthorized)
                 {
                     break;
                 }

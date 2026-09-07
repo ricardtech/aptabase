@@ -165,7 +165,7 @@ export function AlertSettings({ app }: Props) {
                 <label className="text-xs font-medium text-muted-foreground">API Token / Secret Key</label>
                 <TextInput
                   type="password"
-                  placeholder="Token de autenticação"
+                  placeholder="Chave de API do WhatsGo"
                   value={formData.whatsGoToken}
                   onChange={(e) => setFormData((prev) => ({ ...prev, whatsGoToken: e.target.value }))}
                 />

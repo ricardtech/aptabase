@@ -226,13 +226,16 @@ public class AlertBackgroundService(
             client.Timeout = TimeSpan.FromSeconds(30);
             var baseUrl = url.Trim().TrimEnd('/');
             var inst = string.IsNullOrWhiteSpace(instance) ? "default" : instance.Trim();
-            var cleanToken = token?.Trim();
+            var cleanToken = token?.Trim().Trim('"', '\'');
             var cleanPhone = phone.Replace("+", "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Trim();
 
+            var encodedToken = !string.IsNullOrWhiteSpace(cleanToken) ? Uri.EscapeDataString(cleanToken) : "";
             var endpointsToTry = new[]
             {
                 $"{baseUrl}/v1/message/sendText",
+                $"{baseUrl}/v1/message/sendText?apikey={encodedToken}&apiKey={encodedToken}",
                 $"{baseUrl}/message/sendText/{inst}",
+                $"{baseUrl}/message/sendText/{inst}?apikey={encodedToken}&apiKey={encodedToken}",
                 $"{baseUrl}/message/sendText"
             };
 
@@ -241,6 +244,10 @@ public class AlertBackgroundService(
                 instance = inst,
                 to = cleanPhone,
                 text = message,
+                apikey = cleanToken,
+                apiKey = cleanToken,
+                token = cleanToken,
+                key = cleanToken,
                 number = cleanPhone,
                 recipient = cleanPhone,
                 phone = cleanPhone,
@@ -259,13 +266,15 @@ public class AlertBackgroundService(
                     req.Headers.TryAddWithoutValidation("apikey", cleanToken);
                     req.Headers.TryAddWithoutValidation("apiKey", cleanToken);
                     req.Headers.TryAddWithoutValidation("token", cleanToken);
+                    req.Headers.TryAddWithoutValidation("X-Auth-Token", cleanToken);
+                    req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {cleanToken}");
                 }
                 req.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
                 var response = await client.SendAsync(req);
                 var responseText = await response.Content.ReadAsStringAsync();
                 _logger.LogInformation("WhatsGo alert sent to {Endpoint}: StatusCode={StatusCode}, Body={Body}", endpoint, response.StatusCode, responseText);
 
-                if (response.IsSuccessStatusCode || (response.StatusCode != System.Net.HttpStatusCode.NotFound && response.StatusCode != System.Net.HttpStatusCode.MethodNotAllowed))
+                if (response.IsSuccessStatusCode)
                 {
                     break;
                 }
