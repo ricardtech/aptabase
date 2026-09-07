@@ -227,39 +227,49 @@ public class AlertBackgroundService(
             var baseUrl = url.Trim().TrimEnd('/');
             var inst = string.IsNullOrWhiteSpace(instance) ? "default" : instance.Trim();
             var cleanToken = token?.Trim();
-            var encodedToken = !string.IsNullOrWhiteSpace(cleanToken) ? Uri.EscapeDataString(cleanToken) : "";
-            var endpoint = !string.IsNullOrWhiteSpace(cleanToken)
-                ? $"{baseUrl}/message/sendText/{inst}?apikey={encodedToken}&apiKey={encodedToken}&x-api-key={encodedToken}&token={encodedToken}"
-                : $"{baseUrl}/message/sendText/{inst}";
             var cleanPhone = phone.Replace("+", "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Trim();
+
+            var endpointsToTry = new[]
+            {
+                $"{baseUrl}/v1/message/sendText",
+                $"{baseUrl}/message/sendText/{inst}",
+                $"{baseUrl}/message/sendText"
+            };
 
             var payload = new
             {
+                instance = inst,
+                to = cleanPhone,
+                text = message,
                 number = cleanPhone,
                 recipient = cleanPhone,
-                to = cleanPhone,
                 phone = cleanPhone,
-                text = message,
                 message = message,
                 textMessage = new { text = message },
                 options = new { delay = 1200, presence = "composing", linkPreview = false }
             };
 
-            using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
-            if (!string.IsNullOrWhiteSpace(cleanToken))
+            foreach (var endpoint in endpointsToTry)
             {
-                req.Headers.TryAddWithoutValidation("apikey", cleanToken);
-                req.Headers.TryAddWithoutValidation("apiKey", cleanToken);
-                req.Headers.TryAddWithoutValidation("x-api-key", cleanToken);
-                req.Headers.TryAddWithoutValidation("X-API-KEY", cleanToken);
-                req.Headers.TryAddWithoutValidation("X-Api-Key", cleanToken);
-                req.Headers.TryAddWithoutValidation("token", cleanToken);
-                req.Headers.TryAddWithoutValidation("X-Auth-Token", cleanToken);
-                req.Headers.TryAddWithoutValidation("Authorization", cleanToken);
+                using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                if (!string.IsNullOrWhiteSpace(cleanToken))
+                {
+                    req.Headers.TryAddWithoutValidation("X-API-Key", cleanToken);
+                    req.Headers.TryAddWithoutValidation("x-api-key", cleanToken);
+                    req.Headers.TryAddWithoutValidation("apikey", cleanToken);
+                    req.Headers.TryAddWithoutValidation("apiKey", cleanToken);
+                    req.Headers.TryAddWithoutValidation("token", cleanToken);
+                }
+                req.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+                var response = await client.SendAsync(req);
+                var responseText = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("WhatsGo alert sent to {Endpoint}: StatusCode={StatusCode}, Body={Body}", endpoint, response.StatusCode, responseText);
+
+                if (response.IsSuccessStatusCode || (response.StatusCode != System.Net.HttpStatusCode.NotFound && response.StatusCode != System.Net.HttpStatusCode.MethodNotAllowed))
+                {
+                    break;
+                }
             }
-            req.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
-            var response = await client.SendAsync(req);
-            _logger.LogInformation("WhatsGo alert sent: StatusCode={StatusCode}", response.StatusCode);
         }
         catch (Exception ex)
         {
