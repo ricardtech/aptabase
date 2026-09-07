@@ -119,84 +119,34 @@ public class AlertsController(NpgsqlDataSource dataSource, IHttpClientFactory ht
                 token = token?.Trim().Trim('"', '\'');
             }
 
-            var encodedToken = !string.IsNullOrWhiteSpace(token) ? Uri.EscapeDataString(token) : "";
-            var endpointsToTry = new[]
-            {
-                $"{baseUrl}/v1/message/sendText",
-                $"{baseUrl}/v1/message/sendText?apikey={encodedToken}&apiKey={encodedToken}",
-                $"{baseUrl}/message/sendText/{instance}",
-                $"{baseUrl}/message/sendText/{instance}?apikey={encodedToken}&apiKey={encodedToken}",
-                $"{baseUrl}/message/sendText"
-            };
-
+            var endpoint = $"{baseUrl}/v1/message/sendText";
             var messageContent = "🔔 *Aptabase - Teste de Alerta WhatsGo*\n\nConexão com a API do WhatsGo realizada com sucesso!\nVocê receberá notificações instantâneas sobre erros críticos e o resumo diário de telemetria.";
 
             var payload = new
             {
                 instance = instance,
                 to = phone,
-                text = messageContent,
-                apikey = token,
-                apiKey = token,
-                token = token,
-                key = token,
-                number = phone,
-                phone = phone,
-                recipient = phone,
-                message = messageContent,
-                textMessage = new
-                {
-                    text = messageContent
-                },
-                options = new
-                {
-                    delay = 1200,
-                    presence = "composing",
-                    linkPreview = false
-                }
+                text = messageContent
             };
 
-            HttpResponseMessage? lastResponse = null;
-            string lastResponseText = string.Empty;
-
-            foreach (var endpoint in endpointsToTry)
+            using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            if (!string.IsNullOrWhiteSpace(token))
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
-                if (!string.IsNullOrWhiteSpace(token))
-                {
-                    request.Headers.TryAddWithoutValidation("X-API-Key", token);
-                    request.Headers.TryAddWithoutValidation("x-api-key", token);
-                    request.Headers.TryAddWithoutValidation("apikey", token);
-                    request.Headers.TryAddWithoutValidation("apiKey", token);
-                    request.Headers.TryAddWithoutValidation("token", token);
-                    request.Headers.TryAddWithoutValidation("X-Auth-Token", token);
-                    request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {token}");
-                }
-                request.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+                request.Headers.TryAddWithoutValidation("X-API-Key", token);
+            }
+            request.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
 
-                var response = await client.SendAsync(request);
-                var responseText = await response.Content.ReadAsStringAsync();
+            var response = await client.SendAsync(request);
+            var responseText = await response.Content.ReadAsStringAsync();
 
-                _logger.LogInformation("WhatsGo test to {Endpoint}: Status={StatusCode}, Body={Body}", endpoint, response.StatusCode, responseText);
+            _logger.LogInformation("WhatsGo test to {Endpoint}: Status={StatusCode}, Body={Body}", endpoint, response.StatusCode, responseText);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    return Ok(new { success = true, message = "Mensagem de teste enviada com sucesso para o WhatsApp!" });
-                }
-
-                lastResponse = response;
-                lastResponseText = responseText;
-
-                // Continue trying other endpoints if 404, 405, or 401
-                if (response.StatusCode != System.Net.HttpStatusCode.NotFound && 
-                    response.StatusCode != System.Net.HttpStatusCode.MethodNotAllowed &&
-                    response.StatusCode != System.Net.HttpStatusCode.Unauthorized)
-                {
-                    break;
-                }
+            if (response.IsSuccessStatusCode)
+            {
+                return Ok(new { success = true, message = "Mensagem de teste enviada com sucesso para o WhatsApp!" });
             }
 
-            return BadRequest(new { success = false, message = $"WhatsGo API retornou status {(int)(lastResponse?.StatusCode ?? System.Net.HttpStatusCode.BadRequest)}: {lastResponseText}" });
+            return BadRequest(new { success = false, message = $"WhatsGo API retornou status {(int)response.StatusCode}: {responseText}" });
         }
         catch (Exception ex)
         {
