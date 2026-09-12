@@ -52,6 +52,12 @@ public class EventsController : Controller
         if (app.IsLocked) 
             return BadRequest($"Owner account is locked.");
 
+        if (IsBotOrCrawler(userAgent))
+        {
+            _logger.LogInformation("Dropping bot/crawler event from {AppKey}. UA: {UserAgent}", appKey, userAgent);
+            return Ok(new { });
+        }
+
         // Determine OS and Browser accurately from props, headers and user agent
         EnrichOperatingSystemAndBrowser(body, userAgent);
 
@@ -136,6 +142,12 @@ public class EventsController : Controller
 
         if (app.IsLocked) 
             return BadRequest($"Owner account is locked.");
+
+        if (IsBotOrCrawler(userAgent))
+        {
+            _logger.LogInformation("Dropping batch bot/crawler events from {AppKey}. UA: {UserAgent}", appKey, userAgent);
+            return Ok(new { });
+        }
 
         var defaultClientIp = HttpContext.ResolveClientIpAddress();
         var trackingEvents = validEvents.Select(e => {
@@ -357,5 +369,16 @@ public class EventsController : Controller
             NumericProps = numericProps.ToJsonString(),
             IsDebug = body.SystemProps.IsDebug,
         };
+    }
+
+    private static readonly System.Text.RegularExpressions.Regex BotRegex = new System.Text.RegularExpressions.Regex(
+        @"(bot|crawler|spider|scraper|slurp|seek|fetcher|googlebot|bingbot|yandexbot|baiduspider|duckduckbot|petalbot|bytespider|sogou|exabot|ia_archiver|ahrefsbot|semrushbot|mj12bot|dotbot|screaming\s*frog|blexbot|dataforseo|serpstat|dataprovider|zoominfo|builtwith|censys|shodan|leakix|zgrab|masscan|nmap|nikto|sqlmap|nuclei|shadowserver|openvas|acunetix|nessus|dirbuster|gobuster|wpscan|headlesschrome|phantomjs|puppeteer|playwright|selenium)",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled
+    );
+
+    private static bool IsBotOrCrawler(string? userAgent)
+    {
+        if (string.IsNullOrWhiteSpace(userAgent)) return false;
+        return BotRegex.IsMatch(userAgent);
     }
 }

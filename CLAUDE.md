@@ -242,3 +242,7 @@ Uses xUnit, Moq, and FluentAssertions.
 ### Adding an API Endpoint
 
 Controllers use attribute routing. Place in appropriate feature folder and register automatically via `builder.Services.AddControllers()`.
+
+<!-- specsfy:framework:start -->
+@.specsfy/Spec.md
+<!-- specsfy:framework:end -->

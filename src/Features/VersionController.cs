@@ -46,6 +46,6 @@ public class VersionController : ControllerBase
         }
         catch { }
 
-        return Ok(new { version = "v2.1.8" });
+        return Ok(new { version = "v2.1.9" });
     }
 }
