@@ -24,14 +24,70 @@ export function OSIcon(props: Props) {
     lcName = "windows";
   } else if (lcName.includes("chromeos") || lcName.includes("cros")) {
     lcName = "chromeos";
-  } else if (lcName === "fedora") {
-    lcName = "fedoralinux";
-  } else if (lcName === "arch") {
+  } else if (lcName.includes("biglinux")) {
+    lcName = "biglinux";
+  } else if (lcName.includes("ubuntu")) {
+    lcName = "ubuntu";
+  } else if (lcName.includes("manjaro")) {
+    lcName = "manjaro";
+  } else if (lcName.includes("arch")) {
     lcName = "archlinux";
-  } else if (lcName.includes("linuxmint") || lcName === "mint") {
+  } else if (lcName.includes("debian")) {
+    lcName = "debian";
+  } else if (lcName.includes("fedora")) {
+    lcName = "fedoralinux";
+  } else if (lcName.includes("linuxmint") || lcName.includes("mint")) {
     lcName = "linuxmint";
   } else if (lcName.includes("popos") || lcName.includes("pop")) {
     lcName = "popos";
+  } else if (lcName.includes("zorin")) {
+    lcName = "zorinos";
+  } else if (lcName.includes("kali")) {
+    lcName = "kalilinux";
+  } else if (lcName.includes("deepin")) {
+    lcName = "deepin";
+  } else if (lcName.includes("elementary")) {
+    lcName = "elementary";
+  } else if (lcName.includes("endeavour")) {
+    lcName = "endeavouros";
+  } else if (lcName.includes("garuda")) {
+    lcName = "garuda";
+  } else if (lcName.includes("artix")) {
+    lcName = "artix";
+  } else if (lcName.includes("opensuse") || lcName.includes("suse")) {
+    lcName = "opensuse";
+  } else if (lcName.includes("gentoo")) {
+    lcName = "gentoo";
+  } else if (lcName.includes("alpine")) {
+    lcName = "alpinelinux";
+  } else if (lcName.includes("void")) {
+    lcName = "voidlinux";
+  } else if (lcName.includes("slackware")) {
+    lcName = "slackware";
+  } else if (lcName.includes("solus")) {
+    lcName = "solus";
+  } else if (lcName.includes("nixos")) {
+    lcName = "nixos";
+  } else if (lcName.includes("qubes")) {
+    lcName = "qubesos";
+  } else if (lcName.includes("nobara")) {
+    lcName = "nobara";
+  } else if (lcName.includes("bazzite")) {
+    lcName = "bazzite";
+  } else if (lcName.includes("redhat") || lcName.includes("rhel")) {
+    lcName = "redhat";
+  } else if (lcName.includes("centos")) {
+    lcName = "centos";
+  } else if (lcName.includes("rocky")) {
+    lcName = "rockylinux";
+  } else if (lcName.includes("alma")) {
+    lcName = "almalinux";
+  } else if (lcName.includes("tails")) {
+    lcName = "tails";
+  } else if (lcName.includes("freebsd")) {
+    lcName = "freebsd";
+  } else if (lcName.includes("openbsd")) {
+    lcName = "openbsd";
   }
 
   const pathKey = `./${lcName}.svg`;

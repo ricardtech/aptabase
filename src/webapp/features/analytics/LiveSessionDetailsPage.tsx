@@ -6,9 +6,9 @@ import { useApps, useCurrentApp } from "@features/apps";
 import { CountryFlag, CountryName } from "@features/geo";
 import { formatDate, formatTime } from "@fns/format-date";
 import { formatNumber } from "@fns/format-number";
-import { IconArrowLeft, IconClick, IconClock, IconDevices, IconUser } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowUp, IconClick, IconClock, IconDevices, IconUser } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { OSIcon } from "./dashboard/icons/os";
 import { SessionTimeline } from "./liveview/timeline";
@@ -20,6 +20,19 @@ export function Component() {
   const { sessionId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      setShowScrollTop(window.scrollY > 200);
+    };
+    window.addEventListener("scroll", checkScroll, { passive: true });
+    return () => window.removeEventListener("scroll", checkScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (!app || !sessionId) return <Navigate to="/" />;
 
@@ -45,10 +58,10 @@ export function Component() {
 
   return (
     <Page title="Visualização ao Vivo">
-      <div className="flex flex-row justify-between items-center">
+      <div className="sticky top-0 z-30 flex flex-row justify-between items-center py-3 bg-background/95 backdrop-blur border-b border-border/40 mb-4 transition-all">
         <PageHeading title="Linha do Tempo da Sessão" subtitle={sessionId} />
-        <Button className="mb-5" variant="ghost" onClick={handleBack}>
-          <IconArrowLeft /> Voltar
+        <Button variant="outline" className="shadow-sm hover:bg-accent flex items-center gap-1.5" onClick={handleBack}>
+          <IconArrowLeft className="h-4 w-4" /> Voltar
         </Button>
       </div>
 
@@ -97,6 +110,17 @@ export function Component() {
             <SessionTimeline {...data} />
           </div>
         </div>
+      )}
+
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 border border-border/50"
+          title="Subir ao Topo"
+          aria-label="Subir ao Topo"
+        >
+          <IconArrowUp className="h-5 w-5" />
+        </button>
       )}
     </Page>
   );
