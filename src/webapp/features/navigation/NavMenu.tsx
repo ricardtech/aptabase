@@ -6,6 +6,7 @@ import {
   IconAlertTriangle,
   IconCloudDownload,
   IconCode,
+  IconFilter,
   IconGraph,
   IconLayoutGrid,
   IconSettings,
@@ -43,6 +44,13 @@ export function NavMenu(props: { onNavigation?: VoidFunction }) {
             disabled={!currentApp || !!currentApp.lockReason}
             href={`/${currentApp?.id}/sessions`}
             icon={IconUsers}
+            onNavigation={props.onNavigation}
+          />
+          <NavItem
+            label="Funis de Conversão"
+            disabled={!currentApp || !!currentApp.lockReason}
+            href={`/${currentApp?.id}/funnels`}
+            icon={IconFilter}
             onNavigation={props.onNavigation}
           />
           <NavItem

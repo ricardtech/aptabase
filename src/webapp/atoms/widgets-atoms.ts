@@ -7,6 +7,7 @@ export type EventsChartWidgetConfig = {
 
 type WidgetType =
   | "custom-events-chart"
+  | "realtime-gauge"
   | "events-chart"
   | "countries"
   | "operating-systems"
@@ -42,11 +43,19 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     supportsRemove: true,
   },
   {
+    id: "realtime-gauge",
+    title: "Usuários no Momento",
+    type: "realtime-gauge",
+    isMinimized: false,
+    orderIndex: 1,
+    isDefined: true,
+  },
+  {
     id: "main-chart",
     title: "Gráfico de Eventos",
     type: "events-chart",
     isMinimized: false,
-    orderIndex: 1,
+    orderIndex: 2,
     isDefined: true,
   },
   {
@@ -54,7 +63,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Países",
     type: "countries",
     isMinimized: false,
-    orderIndex: 2,
+    orderIndex: 3,
     isDefined: true,
   },
   {
@@ -62,7 +71,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Sistemas Operacionais",
     type: "operating-systems",
     isMinimized: false,
-    orderIndex: 3,
+    orderIndex: 4,
     isDefined: true,
   },
   {
@@ -70,7 +79,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Eventos",
     type: "events",
     isMinimized: false,
-    orderIndex: 4,
+    orderIndex: 5,
     isDefined: true,
   },
   {
@@ -78,7 +87,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Versões do App",
     type: "app-versions",
     isMinimized: false,
-    orderIndex: 5,
+    orderIndex: 6,
     isDefined: true,
   },
 ];
@@ -105,7 +114,15 @@ export const getDashboardWidgetsForAppAtom = atom((get) => {
   const widgets = get(getDashboardWidgetAtom);
   const getWidgetsForApp = (appId: string) => {
     const widgetWithAppId = widgets?.[appId];
-    return widgetWithAppId ?? DEFAULT_WIDGETS_CONFIG;
+    if (!widgetWithAppId) return DEFAULT_WIDGETS_CONFIG;
+    
+    // Assegura que novos widgets essenciais (como realtime-gauge) sejam adicionados caso ainda não existam no localStorage do usuário
+    const existingIds = new Set(widgetWithAppId.map((w) => w.id));
+    const missingDefaults = DEFAULT_WIDGETS_CONFIG.filter((dw) => !existingIds.has(dw.id));
+    if (missingDefaults.length > 0) {
+      return [...widgetWithAppId, ...missingDefaults];
+    }
+    return widgetWithAppId;
   };
   return getWidgetsForApp;
 });

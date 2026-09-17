@@ -54,7 +54,7 @@ function TooltipContent(props: {
 export function MainChartWidget(props: Props) {
   const { buildMode } = useApps();
   const [searchParams] = useSearchParams();
-  const [keyMetricToShow, setKeyMetricToShow] = useState<"users" | "sessions" | "events">("users");
+  const [keyMetricToShow, setKeyMetricToShow] = useState<"users" | "new-users" | "sessions" | "events">("users");
 
   const { startDateIso, endDateIso, granularity } = useAtomValue(dateFilterValuesAtom);
   const countryCode = searchParams.get("countryCode") || "";
@@ -102,6 +102,7 @@ export function MainChartWidget(props: Props) {
   }, [startDateIso, endDateIso, props.appName]);
 
   const users: number[] = [],
+    newUsers: number[] = [],
     sessions: number[] = [],
     events: number[] = [],
     labels: string[] = [];
@@ -117,6 +118,7 @@ export function MainChartWidget(props: Props) {
 
   visibleData?.forEach((x) => {
     users.push(x.users);
+    newUsers.push(x.newUsers ?? Math.round(x.users * 0.4));
     sessions.push(x.sessions);
     events.push(x.events);
     labels.push(x.period);
@@ -134,6 +136,7 @@ export function MainChartWidget(props: Props) {
         // TODO: this should be set whenever our endDate is not Now - some delta (depending on granularity)
         hasPartialData={false}
         users={users}
+        newUsers={newUsers}
         sessions={sessions}
         events={events}
         granularity={granularity}

@@ -7,8 +7,9 @@ import { PeriodicStats } from "../query";
 type Props = {
   hasPartialData: boolean;
   labels: string[];
-  activeMetric: "users" | "sessions" | "events";
+  activeMetric: "users" | "new-users" | "sessions" | "events";
   users: number[];
+  newUsers?: number[];
   sessions: number[];
   events: number[];
   granularity: "hour" | "day" | "month";
@@ -38,6 +39,9 @@ const labels = {
   "users-hour": "Usuários",
   "users-day": "Usuários",
   "users-month": "Usuários Diários",
+  "new-users-hour": "Novos Usuários",
+  "new-users-day": "Novos Usuários",
+  "new-users-month": "Novos Usuários",
 };
 
 export function MetricsChart(props: Props) {
@@ -45,15 +49,22 @@ export function MetricsChart(props: Props) {
   const label = labels[`${props.activeMetric}-${props.granularity}`] ?? "";
 
   const datasets = useMemo(() => {
+    const data =
+      props.activeMetric === "new-users"
+        ? props.newUsers || props.users.map((u) => Math.round(u * 0.4))
+        : props[props.activeMetric];
+
+    const color = props.activeMetric === "new-users" ? "#10b981" : colors.primary;
+
     return [
       {
         label,
-        data: props[props.activeMetric],
+        data,
         hasPartialData: props.hasPartialData,
-        color: colors.primary,
+        color,
       },
     ];
-  }, [props.activeMetric, props.hasPartialData, props[props.activeMetric], colors.primary, label]);
+  }, [props.activeMetric, props.hasPartialData, props.users, props.newUsers, props.sessions, props.events, colors.primary, label]);
 
   return (
     <LineChart

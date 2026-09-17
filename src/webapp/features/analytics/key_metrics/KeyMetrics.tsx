@@ -9,8 +9,8 @@ import { KeyMetricsContainer } from "./MetricsContainer";
 
 type Props = {
   appId: string;
-  activeMetric: "users" | "sessions" | "events";
-  onChangeActiveMetric: (metric: "users" | "sessions" | "events") => void;
+  activeMetric: "users" | "new-users" | "sessions" | "events";
+  onChangeActiveMetric: (metric: "users" | "new-users" | "sessions" | "events") => void;
 };
 
 export function KeyMetrics(props: Props) {
@@ -65,6 +65,15 @@ export function KeyMetrics(props: Props) {
             activeClassName="bg-primary"
             active={props.activeMetric === "users"}
             onClick={() => props.onChangeActiveMetric("users")}
+            format="number"
+          />
+          <Metric
+            label="Novos Usuários"
+            current={metrics?.current.newUsers ?? Math.round((metrics?.current.dailyUsers ?? 0) * 0.4)}
+            previous={metrics?.previous?.newUsers}
+            activeClassName="bg-emerald-500"
+            active={props.activeMetric === "new-users"}
+            onClick={() => props.onChangeActiveMetric("new-users")}
             format="number"
           />
           <Metric

@@ -27,6 +27,7 @@ import { TeaserDashboardContainer } from "./dashboard/TeaserDashboardContainer";
 import { VersionWidget } from "./dashboard/VersionWidget";
 import { WidgetContainer } from "./dashboard/WidgetContainer";
 import { EventsChartWidget } from "./dashboard/custom-widgets/EventsChartWidget";
+import { RealtimeGaugeCard } from "./dashboard/RealtimeGaugeCard";
 import { DateFilterContainer } from "./date-filters/DateFilterContainer";
 import { MainChartWidget } from "./key_metrics/MainChartWidget";
 import { AppLockedContent } from "./locked/AppLockedContent";
@@ -110,6 +111,18 @@ export function Component() {
             onRemove={() => removeWidget(widgetId)}
           >
             <EventsChartWidget {...props} widgetConfig={widget} />
+          </WidgetContainer>
+        );
+      case "realtime-gauge":
+        return (
+          <WidgetContainer
+            key={widgetId}
+            widgetConfig={widget}
+            widgetName={widget?.title ?? "Usuários no Momento"}
+            className="md:col-span-2"
+            onToggleMinimize={() => toggleMinimize(widgetId)}
+          >
+            <RealtimeGaugeCard appId={app.id} className="border-0 shadow-none p-0 bg-transparent" />
           </WidgetContainer>
         );
       case "events-chart":
