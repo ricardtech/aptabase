@@ -15,6 +15,7 @@ export type QueryParams = {
   granularity?: Granularity;
   countryCode?: string;
   osName?: string;
+  deviceModel?: string;
   eventName?: string;
   appVersion?: string;
 };
@@ -40,6 +41,10 @@ export function topOperatingSystem(params: QueryParams): Promise<TopNItem[]> {
 
 export function topOSVersions(params: QueryParams): Promise<TopNItem[]> {
   return api.get<TopNItem[]>(`/_stats/top-osversions`, params);
+}
+
+export function topDevices(params: QueryParams): Promise<TopNItem[]> {
+  return api.get<TopNItem[]>(`/_stats/top-devices`, params);
 }
 
 export function topEvents(params: QueryParams): Promise<TopNItem[]> {

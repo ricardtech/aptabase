@@ -18,7 +18,11 @@ export function OSIcon(props: Props) {
     return <IconApple className={props.className} />;
   }
 
-  if (lcName.includes("android") || lcName.includes("firetv") || lcName.includes("fireos")) {
+  if (lcName.includes("googletv") || lcName.includes("google_tv")) {
+    lcName = "androidtv";
+  } else if (lcName.includes("androidtv") || lcName.includes("android_tv")) {
+    lcName = "androidtv";
+  } else if (lcName.includes("android") || lcName.includes("firetv") || lcName.includes("fireos")) {
     lcName = "android";
   } else if (lcName.includes("windows")) {
     lcName = "windows";

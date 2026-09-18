@@ -11,6 +11,7 @@ type WidgetType =
   | "events-chart"
   | "countries"
   | "operating-systems"
+  | "devices"
   | "events"
   | "app-versions";
 const userDefinedWidgetTypes: WidgetType[] = ["custom-events-chart"];
@@ -75,11 +76,19 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     isDefined: true,
   },
   {
+    id: "device",
+    title: "Dispositivos",
+    type: "devices",
+    isMinimized: false,
+    orderIndex: 5,
+    isDefined: true,
+  },
+  {
     id: "event",
     title: "Eventos",
     type: "events",
     isMinimized: false,
-    orderIndex: 5,
+    orderIndex: 6,
     isDefined: true,
   },
   {
@@ -87,7 +96,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Versões do App",
     type: "app-versions",
     isMinimized: false,
-    orderIndex: 6,
+    orderIndex: 7,
     isDefined: true,
   },
 ];

@@ -20,6 +20,7 @@ import { dashboardWidgetsAtom, getDashboardWidgetsForAppAtom, SingleWidgetConfig
 import { CurrentFilters } from "./CurrentFilters";
 import { AppShareInfo } from "./dashboard/AppShareInfo";
 import { CountryWidget } from "./dashboard/CountryWidget";
+import { DeviceWidget } from "./dashboard/DeviceWidget";
 import { EventWidget } from "./dashboard/EventWidget";
 import { OSWidget } from "./dashboard/OSWidget";
 import { OnboardingDashboard } from "./dashboard/OnboardingDashboard";
@@ -160,6 +161,19 @@ export function Component() {
               className="h-full"
             >
               <OSWidget {...props} />
+            </WidgetContainer>
+          </LazyLoad>
+        );
+      case "devices":
+        return (
+          <LazyLoad key={widgetId}>
+            <WidgetContainer
+              widgetConfig={widget}
+              widgetName={widget?.title ?? "Dispositivos"}
+              onToggleMinimize={() => toggleMinimize(widgetId)}
+              className="h-full"
+            >
+              <DeviceWidget {...props} />
             </WidgetContainer>
           </LazyLoad>
         );
