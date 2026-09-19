@@ -26,6 +26,7 @@ import { OSWidget } from "./dashboard/OSWidget";
 import { OnboardingDashboard } from "./dashboard/OnboardingDashboard";
 import { TeaserDashboardContainer } from "./dashboard/TeaserDashboardContainer";
 import { VersionWidget } from "./dashboard/VersionWidget";
+import { SportsWidget } from "./dashboard/SportsWidget";
 import { WidgetContainer } from "./dashboard/WidgetContainer";
 import { EventsChartWidget } from "./dashboard/custom-widgets/EventsChartWidget";
 import { RealtimeGaugeCard } from "./dashboard/RealtimeGaugeCard";
@@ -187,6 +188,19 @@ export function Component() {
               className="h-full"
             >
               <EventWidget {...props} />
+            </WidgetContainer>
+          </LazyLoad>
+        );
+      case "sports-games":
+        return (
+          <LazyLoad key={widgetId}>
+            <WidgetContainer
+              widgetConfig={widget}
+              widgetName={widget?.title ?? "Top Campeonatos & Jogos ao Vivo"}
+              onToggleMinimize={() => toggleMinimize(widgetId)}
+              className="h-full"
+            >
+              <SportsWidget {...props} />
             </WidgetContainer>
           </LazyLoad>
         );
