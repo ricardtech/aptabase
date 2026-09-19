@@ -12,13 +12,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@compo
 import { formatNumber } from "@fns/format-number";
 import { useLocalStorage } from "@hooks/use-localstorage";
 import { twMerge } from "tailwind-merge";
-import { IconTrophy, IconBallFootball, IconDeviceTv, IconSparkles } from "@tabler/icons-react";
+import { IconTrophy, IconBallFootball, IconBallVolleyball, IconDeviceTv, IconSparkles } from "@tabler/icons-react";
 
 type Props = {
   appId: string;
 };
 
-type SportsTab = "Campeonato" | "Partida" | "Canal Transmissão";
+type SportsTab = "Campeonato" | "Partida" | "Vôlei" | "Canal Transmissão";
 
 function isValidTitle(val: string): boolean {
   if (!val) return false;
@@ -78,17 +78,35 @@ export function SportsWidget(props: Props) {
   const availableTabs: { key: SportsTab; label: string; icon: React.ReactNode }[] = [
     { key: "Campeonato", label: "Campeonatos", icon: <IconTrophy className="w-3.5 h-3.5" /> },
     { key: "Partida", label: "Partidas", icon: <IconBallFootball className="w-3.5 h-3.5" /> },
+    { key: "Vôlei", label: "Vôlei", icon: <IconBallVolleyball className="w-3.5 h-3.5" /> },
     { key: "Canal Transmissão", label: "Canais", icon: <IconDeviceTv className="w-3.5 h-3.5" /> },
   ];
 
   const rawFiltered = (rows || [])
     .filter((row) => {
       const key = (row.stringKey || "").toLowerCase().trim();
+      const val = (row.stringValue || "").toLowerCase().trim();
+
       if (activeTab === "Campeonato") {
         return key === "campeonato" || key === "liga" || key === "torneio";
       }
       if (activeTab === "Partida") {
         return key === "partida" || key === "jogo" || key === "confronto";
+      }
+      if (activeTab === "Vôlei") {
+        const isVoleiKey = key === "vôlei" || key === "volei" || key === "superliga" || key === "vnl";
+        const isVoleiVal =
+          val.includes("vôlei") ||
+          val.includes("volei") ||
+          val.includes("superliga") ||
+          val.includes("vnl") ||
+          val.includes("sada cruzeiro") ||
+          val.includes("praia clube") ||
+          val.includes("minas") ||
+          val.includes("osasco") ||
+          val.includes("sesi") ||
+          val.includes("joinville vôlei");
+        return isVoleiKey || ((key === "partida" || key === "jogo" || key === "campeonato") && isVoleiVal);
       }
       if (activeTab === "Canal Transmissão") {
         return (
@@ -123,6 +141,13 @@ export function SportsWidget(props: Props) {
     setFormat(format === "absolute" ? "percentage" : "absolute");
   };
 
+  const getEmptyLabel = () => {
+    if (activeTab === "Campeonato") return "campeonato";
+    if (activeTab === "Partida") return "partida de futebol/geral";
+    if (activeTab === "Vôlei") return "jogo de vôlei / Superliga";
+    return "canal de transmissão";
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header do Widget */}
@@ -142,7 +167,7 @@ export function SportsWidget(props: Props) {
         </div>
 
         {/* Seleção de Abas */}
-        <div className="flex items-center gap-1.5 pt-0.5">
+        <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto">
           {availableTabs.map((tab) => {
             const isActive = activeTab === tab.key;
             return (
@@ -150,7 +175,7 @@ export function SportsWidget(props: Props) {
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   isActive
                     ? "bg-primary text-primary-foreground shadow-sm font-semibold"
                     : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -176,7 +201,7 @@ export function SportsWidget(props: Props) {
               <IconSparkles className="w-5 h-5 opacity-70" />
             </div>
             <p className="text-sm font-medium text-foreground">
-              Nenhum dado de {activeTab === "Campeonato" ? "campeonato" : activeTab === "Partida" ? "partida" : "canal"} registrado
+              Nenhum dado de {getEmptyLabel()} registrado
             </p>
             <p className="text-xs text-muted-foreground mt-1 max-w-[280px]">
               Os dados aparecerão aqui em tempo real assim que transmissões forem reproduzidas.
