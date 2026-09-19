@@ -20,6 +20,18 @@ type Props = {
 
 type SportsTab = "Campeonato" | "Partida" | "Canal Transmissão";
 
+function isValidTitle(val: string): boolean {
+  if (!val) return false;
+  const trimmed = val.trim();
+  if (trimmed === "" || trimmed === "null" || trimmed === "undefined") return false;
+  // Ignora links, URLs e streams m3u8/ts/mpd
+  if (/^https?:\/\//i.test(trimmed)) return false;
+  if (/\.(m3u8|ts|mpd|mp4|mkv|avi)(\?.*)?$/i.test(trimmed)) return false;
+  if (/:\/\//i.test(trimmed)) return false;
+  if (/\/(live|movie|series)\//i.test(trimmed)) return false;
+  return true;
+}
+
 export function SportsWidget(props: Props) {
   const { buildMode } = useApps();
   const [searchParams] = useSearchParams();
@@ -69,7 +81,7 @@ export function SportsWidget(props: Props) {
     { key: "Canal Transmissão", label: "Canais", icon: <IconDeviceTv className="w-3.5 h-3.5" /> },
   ];
 
-  const items = (rows || [])
+  const rawFiltered = (rows || [])
     .filter((row) => {
       const key = (row.stringKey || "").toLowerCase().trim();
       if (activeTab === "Campeonato") {
@@ -88,11 +100,20 @@ export function SportsWidget(props: Props) {
       }
       return false;
     })
-    .filter((row) => !!row.stringValue && row.stringValue.trim() !== "")
-    .map((row) => ({
-      name: row.stringValue,
-      value: row.events,
-      key: `${activeTab}-${row.stringValue}`,
+    .filter((row) => isValidTitle(row.stringValue));
+
+  // Agrupar itens com o mesmo nome para somar as contagens e evitar duplicatas
+  const groupedMap = new Map<string, number>();
+  for (const row of rawFiltered) {
+    const name = row.stringValue.trim();
+    groupedMap.set(name, (groupedMap.get(name) || 0) + row.events);
+  }
+
+  const items = Array.from(groupedMap.entries())
+    .map(([name, value]) => ({
+      name,
+      value,
+      key: `${activeTab}-${name}`,
     }))
     .sort((a, b) => b.value - a.value);
 
