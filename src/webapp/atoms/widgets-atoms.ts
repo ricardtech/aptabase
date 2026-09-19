@@ -31,33 +31,14 @@ export type SingleWidgetConfig<T = any> = {
 export type WidgetsConfig = {
   [key: string]: SingleWidgetConfig[];
 };
+
 export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
-  {
-    id: "events-chart",
-    title: "Gráfico Personalizado",
-    type: "custom-events-chart",
-    isMinimized: false,
-    orderIndex: 0,
-    isDefined: false,
-    properties: {
-      selectedEventNames: [],
-    },
-    supportsRemove: true,
-  },
-  {
-    id: "realtime-gauge",
-    title: "Usuários no Momento",
-    type: "realtime-gauge",
-    isMinimized: false,
-    orderIndex: 1,
-    isDefined: true,
-  },
   {
     id: "main-chart",
     title: "Gráfico de Eventos",
     type: "events-chart",
     isMinimized: false,
-    orderIndex: 2,
+    orderIndex: 0,
     isDefined: true,
   },
   {
@@ -65,7 +46,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Países",
     type: "countries",
     isMinimized: false,
-    orderIndex: 3,
+    orderIndex: 1,
     isDefined: true,
   },
   {
@@ -73,7 +54,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Sistemas Operacionais",
     type: "operating-systems",
     isMinimized: false,
-    orderIndex: 4,
+    orderIndex: 2,
     isDefined: true,
   },
   {
@@ -81,7 +62,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Dispositivos",
     type: "devices",
     isMinimized: false,
-    orderIndex: 5,
+    orderIndex: 3,
     isDefined: true,
   },
   {
@@ -89,7 +70,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Top Campeonatos & Jogos ao Vivo",
     type: "sports-games",
     isMinimized: false,
-    orderIndex: 6,
+    orderIndex: 4,
     isDefined: true,
   },
   {
@@ -97,7 +78,7 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Eventos",
     type: "events",
     isMinimized: false,
-    orderIndex: 7,
+    orderIndex: 5,
     isDefined: true,
   },
   {
@@ -105,8 +86,28 @@ export const DEFAULT_WIDGETS_CONFIG: SingleWidgetConfig[] = [
     title: "Versões do App",
     type: "app-versions",
     isMinimized: false,
-    orderIndex: 8,
+    orderIndex: 6,
     isDefined: true,
+  },
+  {
+    id: "realtime-gauge",
+    title: "Usuários no Momento",
+    type: "realtime-gauge",
+    isMinimized: false,
+    orderIndex: 7,
+    isDefined: true,
+  },
+  {
+    id: "events-chart",
+    title: "Gráfico Personalizado",
+    type: "custom-events-chart",
+    isMinimized: false,
+    orderIndex: 8,
+    isDefined: false,
+    properties: {
+      selectedEventNames: [],
+    },
+    supportsRemove: true,
   },
 ];
 
@@ -115,7 +116,7 @@ const EMPTY_CUSTOM_EVENTS_CHART_WIDGET: SingleWidgetConfig<EventsChartWidgetConf
   title: "Gráfico Personalizado",
   type: "custom-events-chart",
   isMinimized: false,
-  orderIndex: 0,
+  orderIndex: 8,
   isDefined: false,
   properties: {
     selectedEventNames: [],
@@ -123,9 +124,16 @@ const EMPTY_CUSTOM_EVENTS_CHART_WIDGET: SingleWidgetConfig<EventsChartWidgetConf
   supportsRemove: true,
 };
 
-localStorage.removeItem("dashboard_widgets");
+// Limpa chaves antigas de layout para garantir o alinhamento dos 6 cards
+try {
+  localStorage.removeItem("dashboard_widgets");
+  localStorage.removeItem("dashboard_widgets_map");
+  localStorage.removeItem("dashboard_widgets_map_v2");
+} catch {}
 
-const initialWidgetsValue = JSON.parse(localStorage.getItem("dashboard_widgets_map") ?? "null");
+const STORAGE_KEY = "dashboard_widgets_map_v3";
+
+const initialWidgetsValue = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
 const getDashboardWidgetAtom: WritableAtom<WidgetsConfig, WidgetsConfig[], void> = atom(initialWidgetsValue);
 
 export const getDashboardWidgetsForAppAtom = atom((get) => {
@@ -134,7 +142,7 @@ export const getDashboardWidgetsForAppAtom = atom((get) => {
     const widgetWithAppId = widgets?.[appId];
     if (!widgetWithAppId) return DEFAULT_WIDGETS_CONFIG;
     
-    // Assegura que novos widgets essenciais (como realtime-gauge e sports-games) sejam adicionados caso ainda não existam no localStorage do usuário
+    // Assegura que todos os widgets padrão (incluindo Dispositivos e Sports) existam
     const existingIds = new Set(widgetWithAppId.map((w) => w.id));
     const missingDefaults = DEFAULT_WIDGETS_CONFIG.filter((dw) => !existingIds.has(dw.id)).map((dw, idx) => ({
       ...dw,
@@ -240,7 +248,7 @@ export const dashboardWidgetsAtom = atom<null, [UpdateDashboardWidgetsAction], v
     });
     set(getDashboardWidgetAtom, allConfigs);
 
-    localStorage.setItem("dashboard_widgets_map", JSON.stringify(allConfigs));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(allConfigs));
   }
 );
 
