@@ -5,8 +5,14 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { dateFilterValuesAtom } from "../../../atoms/date-atoms";
 import { topEventProps } from "../query";
-import { TopNChart } from "./TopNChart";
 import { TopNTitle } from "./TopNTitle";
+import { TopNSkeleton } from "./TopNSkeleton";
+import { ErrorState } from "@components/ErrorState";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@components/Tooltip";
+import { formatNumber } from "@fns/format-number";
+import { useLocalStorage } from "@hooks/use-localstorage";
+import { twMerge } from "tailwind-merge";
+import { IconTrophy, IconBallFootball, IconDeviceTv, IconSparkles } from "@tabler/icons-react";
 
 type Props = {
   appId: string;
@@ -24,6 +30,7 @@ export function SportsWidget(props: Props) {
   const osName = searchParams.get("osName") || "";
 
   const [activeTab, setActiveTab] = useState<SportsTab>("Campeonato");
+  const [format, setFormat] = useLocalStorage<"absolute" | "percentage">("top_n_sports_format", "absolute");
 
   const {
     isLoading,
@@ -50,21 +57,38 @@ export function SportsWidget(props: Props) {
         granularity,
         countryCode,
         appVersion,
-        eventName: "Assistir Jogo",
         osName,
       }),
     staleTime: 10000,
     enabled: !!startDateIso && !!endDateIso && !!granularity,
   });
 
-  const availableTabs: { key: SportsTab; label: string; icon: string }[] = [
-    { key: "Campeonato", label: "Campeonatos", icon: "🏆" },
-    { key: "Partida", label: "Partidas", icon: "⚽" },
-    { key: "Canal Transmissão", label: "Canais", icon: "📺" },
+  const availableTabs: { key: SportsTab; label: string; icon: React.ReactNode }[] = [
+    { key: "Campeonato", label: "Campeonatos", icon: <IconTrophy className="w-3.5 h-3.5" /> },
+    { key: "Partida", label: "Partidas", icon: <IconBallFootball className="w-3.5 h-3.5" /> },
+    { key: "Canal Transmissão", label: "Canais", icon: <IconDeviceTv className="w-3.5 h-3.5" /> },
   ];
 
   const items = (rows || [])
-    .filter((row) => row.stringKey === activeTab && !!row.stringValue)
+    .filter((row) => {
+      const key = (row.stringKey || "").toLowerCase().trim();
+      if (activeTab === "Campeonato") {
+        return key === "campeonato" || key === "liga" || key === "torneio";
+      }
+      if (activeTab === "Partida") {
+        return key === "partida" || key === "jogo" || key === "confronto";
+      }
+      if (activeTab === "Canal Transmissão") {
+        return (
+          key === "canal transmissão" ||
+          key === "canal transmissao" ||
+          key === "canal" ||
+          key === "nome do canal"
+        );
+      }
+      return false;
+    })
+    .filter((row) => !!row.stringValue && row.stringValue.trim() !== "")
     .map((row) => ({
       name: row.stringValue,
       value: row.events,
@@ -72,42 +96,109 @@ export function SportsWidget(props: Props) {
     }))
     .sort((a, b) => b.value - a.value);
 
-  const titleElement = (
-    <div className="flex flex-col gap-1.5 w-full">
-      <div className="flex items-center justify-between">
-        <TopNTitle>Top Campeonatos & Jogos ao Vivo</TopNTitle>
-      </div>
-      <div className="flex items-center gap-1 mt-1">
-        {availableTabs.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${
-              activeTab === tab.key
-                ? "bg-blue-600/20 border border-blue-500/40 text-blue-400 shadow-sm"
-                : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <span>{tab.icon}</span>
-            <span>{tab.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+  const total = items.reduce((acc, item) => acc + item.value, 0);
+
+  const toggleFormat = () => {
+    setFormat(format === "absolute" ? "percentage" : "absolute");
+  };
 
   return (
-    <TopNChart
-      id="sports-games"
-      key={`sports-${activeTab}`}
-      title={titleElement}
-      items={items}
-      isLoading={isLoading}
-      isError={isError}
-      refetch={refetch}
-      defaultFormat="absolute"
-      valueLabel="Visualizações"
-    />
+    <div className="flex flex-col h-full">
+      {/* Header do Widget */}
+      <div className="flex w-full flex-col gap-2 pb-2">
+        <div className="flex w-full items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <TopNTitle>Top Campeonatos & Jogos ao Vivo</TopNTitle>
+          </div>
+          {items.length > 0 && (
+            <div
+              onClick={toggleFormat}
+              className={twMerge("text-muted-foreground text-xs font-normal pr-1 cursor-pointer hover:text-foreground transition-colors")}
+            >
+              Visualizações
+            </div>
+          )}
+        </div>
+
+        {/* Seleção de Abas */}
+        <div className="flex items-center gap-1.5 pt-0.5">
+          {availableTabs.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                    : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Corpo do Widget */}
+      <div className="flex-1 mt-1">
+        {isError ? (
+          <ErrorState refetch={refetch} />
+        ) : isLoading ? (
+          <TopNSkeleton />
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center p-6 my-2 rounded-lg bg-muted/20 border border-dashed border-border/60">
+            <div className="p-3 rounded-full bg-muted/40 text-muted-foreground mb-2">
+              <IconSparkles className="w-5 h-5 opacity-70" />
+            </div>
+            <p className="text-sm font-medium text-foreground">
+              Nenhum dado de {activeTab === "Campeonato" ? "campeonato" : activeTab === "Partida" ? "partida" : "canal"} registrado
+            </p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-[280px]">
+              Os dados aparecerão aqui em tempo real assim que transmissões forem reproduzidas.
+            </p>
+          </div>
+        ) : (
+          <div className="grid text-sm mt-1 max-h-[22rem] overflow-y-auto divide-y divide-border/20">
+            {items.map((item) => {
+              const percentage = total > 0 ? item.value / total : 0;
+              return (
+                <div
+                  key={item.key}
+                  className="flex items-center justify-between group py-2 px-1 relative rounded hover:bg-accent/40 transition-colors"
+                >
+                  <div className="relative z-10 flex w-full max-w-[calc(100%-3.5rem)] items-center">
+                    <div
+                      className="absolute h-7 origin-left bg-primary-100 dark:bg-primary-950/60 rounded transition-all"
+                      style={{ width: `${Math.min(percentage, 1) * 100}%` }}
+                    />
+                    <div className="flex z-10 px-2 font-medium truncate text-foreground">
+                      {item.name}
+                    </div>
+                  </div>
+                  <p className="text-xs pr-2 z-10 tabular-nums font-semibold text-muted-foreground">
+                    {format === "percentage" ? (
+                      `${Math.round(percentage * 100)}%`
+                    ) : item.value >= 1e3 ? (
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipContent>{item.value.toLocaleString("pt-BR")}</TooltipContent>
+                          <TooltipTrigger>{formatNumber(item.value)}</TooltipTrigger>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      item.value
+                    )}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

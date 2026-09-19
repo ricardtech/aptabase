@@ -134,9 +134,12 @@ export const getDashboardWidgetsForAppAtom = atom((get) => {
     const widgetWithAppId = widgets?.[appId];
     if (!widgetWithAppId) return DEFAULT_WIDGETS_CONFIG;
     
-    // Assegura que novos widgets essenciais (como realtime-gauge) sejam adicionados caso ainda não existam no localStorage do usuário
+    // Assegura que novos widgets essenciais (como realtime-gauge e sports-games) sejam adicionados caso ainda não existam no localStorage do usuário
     const existingIds = new Set(widgetWithAppId.map((w) => w.id));
-    const missingDefaults = DEFAULT_WIDGETS_CONFIG.filter((dw) => !existingIds.has(dw.id));
+    const missingDefaults = DEFAULT_WIDGETS_CONFIG.filter((dw) => !existingIds.has(dw.id)).map((dw, idx) => ({
+      ...dw,
+      orderIndex: widgetWithAppId.length + idx,
+    }));
     if (missingDefaults.length > 0) {
       return [...widgetWithAppId, ...missingDefaults];
     }
