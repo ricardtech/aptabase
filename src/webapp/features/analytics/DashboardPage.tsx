@@ -4,8 +4,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@compo
 import { useApps, useCurrentApp } from "@features/apps";
 import { IconShare } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai/react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useSearchParams, Navigate, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { dashboardWidgetsAtom, getDashboardWidgetsForAppAtom } from "../../atoms/widgets-atoms";
+import { dateFilterValuesAtom } from "../../atoms/date-atoms";
+import { topEvents, topEventProps } from "./query";
 import { CurrentFilters } from "./CurrentFilters";
 import { AppShareInfo } from "./dashboard/AppShareInfo";
 import { CountryWidget } from "./dashboard/CountryWidget";
@@ -27,30 +31,16 @@ import { DebugModeBanner } from "./mode/DebugModeBanner";
 
 Component.displayName = "DashboardPage";
 
-function isStreamingApp(appName: string): boolean {
-  if (!appName) return false;
-  const name = appName.toLowerCase();
-  const streamingKeywords = [
-    "play",
-    "tv",
-    "stream",
-    "iptv",
-    "tivimate",
-    "player",
-    "vod",
-    "assistir",
-    "canais",
-    "filme",
-    "serie",
-    "ricardtv",
-  ];
-  return streamingKeywords.some((kw) => name.includes(kw));
-}
-
 export function Component() {
   const { buildMode } = useApps();
   const app = useCurrentApp();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { startDateIso, endDateIso, granularity } = useAtomValue(dateFilterValuesAtom);
+
+  const countryCode = searchParams.get("countryCode") || "";
+  const appVersion = searchParams.get("appVersion") || "";
+  const osName = searchParams.get("osName") || "";
 
   if (!app) return <Navigate to="/" />;
   if (app.lockReason) {
@@ -70,8 +60,76 @@ export function Component() {
   const widgetsConfig = getWidgetsForApp(app.id);
   const setWidgetsConfig = useSetAtom(dashboardWidgetsAtom);
 
+  // 1. Consulta de propriedades de telemetria enviadas pelo app
+  const { data: sportsPropsList } = useQuery({
+    queryKey: ["top-sports-detect", buildMode, app.id, startDateIso, endDateIso, countryCode, appVersion, osName],
+    queryFn: () =>
+      topEventProps({
+        buildMode,
+        appId: app.id,
+        startDate: startDateIso,
+        endDate: endDateIso,
+        granularity,
+        countryCode,
+        appVersion,
+        osName,
+      }),
+    staleTime: 30000,
+    enabled: !!startDateIso && !!endDateIso && !!granularity,
+  });
+
+  // 2. Consulta de eventos de telemetria enviados pelo app
+  const { data: topEventsList } = useQuery({
+    queryKey: ["top-events-detect", buildMode, app.id, startDateIso, endDateIso, countryCode, appVersion, osName],
+    queryFn: () =>
+      topEvents({
+        buildMode,
+        appId: app.id,
+        startDate: startDateIso,
+        endDate: endDateIso,
+        granularity,
+        countryCode,
+        appVersion,
+        osName,
+      }),
+    staleTime: 30000,
+    enabled: !!startDateIso && !!endDateIso && !!granularity,
+  });
+
+  // 3. Detecção 100% inteligente baseada na TELEMETRIA do aplicativo
+  const hasSportsTelemetry = useMemo(() => {
+    const hasProps = (sportsPropsList || []).some((row) => {
+      const key = (row.stringKey || "").toLowerCase().trim();
+      return (
+        key === "campeonato" ||
+        key === "partida" ||
+        key === "jogo" ||
+        key === "confronto" ||
+        key === "vôlei" ||
+        key === "volei" ||
+        key === "superliga" ||
+        key === "canal transmissão" ||
+        key === "canal transmissao" ||
+        key === "canal" ||
+        key === "nome do canal"
+      );
+    });
+
+    const hasEvents = (topEventsList || []).some((ev) => {
+      const name = (ev.name || "").toLowerCase().trim();
+      return (
+        name.includes("jogo") ||
+        name.includes("canal") ||
+        name.includes("reprodução tv") ||
+        name.includes("reproduzir canal") ||
+        name.includes("assistir jogo")
+      );
+    });
+
+    return hasProps || hasEvents;
+  }, [sportsPropsList, topEventsList]);
+
   const customWidgets = widgetsConfig.filter((w) => w.type === "custom-events-chart");
-  const isStreaming = isStreamingApp(app.name);
 
   const toggleMinimize = (widgetId: string) => {
     setWidgetsConfig({
@@ -142,14 +200,14 @@ export function Component() {
             </div>
           </LazyLoad>
 
-          {/* 3. Dispositivos e Top Esportes (Se for Streaming) ou Dispositivos e Eventos (Se for Web/Site) */}
+          {/* 3. Dispositivos e Top Esportes (Se houver telemetria esportiva) ou Dispositivos e Eventos (Se for Web/Site) */}
           <LazyLoad key="device">
             <div className="rounded-lg border border-border p-4 bg-card h-full shadow-sm">
               <DeviceWidget {...props} />
             </div>
           </LazyLoad>
 
-          {isStreaming ? (
+          {hasSportsTelemetry ? (
             <>
               <LazyLoad key="sports-games">
                 <div className="rounded-lg border border-border p-4 bg-card h-full shadow-sm">
