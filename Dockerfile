@@ -14,7 +14,7 @@ COPY ./src /work/src
 RUN dotnet publish "Aptabase.csproj" -a $TARGETARCH -c Release -o /work/publish /p:UseAppHost=false
 
 # WebApp Build
-FROM oven/bun:1.4.2-alpine AS webapp
+FROM --platform=$BUILDPLATFORM oven/bun:1.4.2-alpine AS webapp
 WORKDIR /work
 
 COPY ./src/package.json ./src/bun.lock* ./
