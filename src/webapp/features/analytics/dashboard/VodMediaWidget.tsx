@@ -12,22 +12,19 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@compo
 import { formatNumber } from "@fns/format-number";
 import { useLocalStorage } from "@hooks/use-localstorage";
 import { twMerge } from "tailwind-merge";
-import { IconTrophy, IconBallFootball, IconBallVolleyball, IconDeviceTv, IconSparkles } from "@tabler/icons-react";
+import { IconMovie, IconVideo, IconDeviceTv, IconSparkles } from "@tabler/icons-react";
 
 type Props = {
   appId: string;
 };
 
-type SportsTab = "Campeonato" | "Partida" | "Vôlei" | "Canal Transmissão";
+type MediaTab = "Séries" | "Filmes" | "Canais";
 
 function isValidTitle(val: string): boolean {
   if (!val) return false;
   const trimmed = val.trim();
-  const lower = trimmed.toLowerCase();
-  if (trimmed === "" || trimmed === "null" || trimmed === "undefined" || trimmed === "sem título") return false;
-  // Ignora placeholders genéricos que não são nomes reais de campeonatos ou partidas
-  if (lower === "campeonatos esportivos" || lower === "esportes" || lower === "geral" || lower === "vôlei ao vivo") return false;
-  // Ignora links, URLs e streams m3u8/ts/mpd
+  if (trimmed === "" || trimmed === "null" || trimmed === "undefined") return false;
+  // Ignora URLs e arquivos técnicos de streaming
   if (/^https?:\/\//i.test(trimmed)) return false;
   if (/\.(m3u8|ts|mpd|mp4|mkv|avi)(\?.*)?$/i.test(trimmed)) return false;
   if (/:\/\//i.test(trimmed)) return false;
@@ -35,7 +32,7 @@ function isValidTitle(val: string): boolean {
   return true;
 }
 
-export function SportsWidget(props: Props) {
+export function VodMediaWidget(props: Props) {
   const { buildMode } = useApps();
   const [searchParams] = useSearchParams();
   const { startDateIso, endDateIso, granularity } = useAtomValue(dateFilterValuesAtom);
@@ -44,8 +41,8 @@ export function SportsWidget(props: Props) {
   const appVersion = searchParams.get("appVersion") || "";
   const osName = searchParams.get("osName") || "";
 
-  const [activeTab, setActiveTab] = useState<SportsTab>("Campeonato");
-  const [format, setFormat] = useLocalStorage<"absolute" | "percentage">("top_n_sports_format", "absolute");
+  const [activeTab, setActiveTab] = useState<MediaTab>("Séries");
+  const [format, setFormat] = useLocalStorage<"absolute" | "percentage">("top_n_media_format", "absolute");
 
   const {
     isLoading,
@@ -54,7 +51,7 @@ export function SportsWidget(props: Props) {
     refetch,
   } = useQuery({
     queryKey: [
-      "top-sports-props",
+      "top-media-props",
       buildMode,
       props.appId,
       startDateIso,
@@ -78,55 +75,63 @@ export function SportsWidget(props: Props) {
     enabled: !!startDateIso && !!endDateIso && !!granularity,
   });
 
-  const availableTabs: { key: SportsTab; label: string; icon: React.ReactNode }[] = [
-    { key: "Campeonato", label: "Campeonatos", icon: <IconTrophy className="w-3.5 h-3.5" /> },
-    { key: "Partida", label: "Partidas", icon: <IconBallFootball className="w-3.5 h-3.5" /> },
-    { key: "Vôlei", label: "Vôlei", icon: <IconBallVolleyball className="w-3.5 h-3.5" /> },
-    { key: "Canal Transmissão", label: "Canais", icon: <IconDeviceTv className="w-3.5 h-3.5" /> },
+  const availableTabs: { key: MediaTab; label: string; icon: React.ReactNode }[] = [
+    { key: "Séries", label: "Top Séries", icon: <IconVideo className="w-3.5 h-3.5" /> },
+    { key: "Filmes", label: "Top Filmes", icon: <IconMovie className="w-3.5 h-3.5" /> },
+    { key: "Canais", label: "Top Canais", icon: <IconDeviceTv className="w-3.5 h-3.5" /> },
   ];
 
   const rawFiltered = (rows || [])
     .filter((row) => {
       const key = (row.stringKey || "").toLowerCase().trim();
-      const val = (row.stringValue || "").toLowerCase().trim();
+      const val = (row.stringValue || "").trim();
 
-      if (activeTab === "Campeonato") {
-        return key === "campeonato" || key === "liga" || key === "torneio";
-      }
-      if (activeTab === "Partida") {
-        return key === "partida" || key === "jogo" || key === "confronto";
-      }
-      if (activeTab === "Vôlei") {
-        const isVoleiKey = key === "vôlei" || key === "volei" || key === "superliga" || key === "vnl";
-        const isVoleiVal =
-          val.includes("vôlei") ||
-          val.includes("volei") ||
-          val.includes("superliga") ||
-          val.includes("vnl") ||
-          val.includes("sada cruzeiro") ||
-          val.includes("praia clube") ||
-          val.includes("minas") ||
-          val.includes("osasco") ||
-          val.includes("sesi") ||
-          val.includes("joinville vôlei");
-        return isVoleiKey || ((key === "partida" || key === "jogo" || key === "campeonato") && isVoleiVal);
-      }
-      if (activeTab === "Canal Transmissão") {
+      if (activeTab === "Séries") {
         return (
-          key === "canal transmissão" ||
-          key === "canal transmissao" ||
+          key === "título da série" ||
+          key === "titulo da serie" ||
+          key === "nome da série" ||
+          key === "nome da serie" ||
+          key === "série" ||
+          key === "serie" ||
+          key === "🍿 série"
+        );
+      }
+      if (activeTab === "Filmes") {
+        return (
+          key === "título do filme" ||
+          key === "titulo do filme" ||
+          key === "nome do filme" ||
+          key === "filme" ||
+          key === "🎬 filme"
+        );
+      }
+      if (activeTab === "Canais") {
+        return (
           key === "canal" ||
-          key === "nome do canal"
+          key === "nome do canal" ||
+          key === "📺 canal" ||
+          key === "canal transmissão" ||
+          key === "canal transmissao"
         );
       }
       return false;
     })
     .filter((row) => isValidTitle(row.stringValue));
 
-  // Agrupar itens com o mesmo nome para somar as contagens e evitar duplicatas
+  // Agrupar itens com o mesmo nome para somar as contagens (agrupando episódios sob a série principal)
   const groupedMap = new Map<string, number>();
   for (const row of rawFiltered) {
-    const name = row.stringValue.trim();
+    let name = row.stringValue.trim();
+    // Se for série e ainda vier com prefixo de temporada/episódio, limpar para o título principal
+    if (activeTab === "Séries") {
+      name = name.replace(/\s*-\s*T\d+.*$/i, '')
+                 .replace(/\s*-\s*S\d+.*$/i, '')
+                 .replace(/\s*-\s*E\d+.*$/i, '')
+                 .replace(/\s*-\s*Temp.*$/i, '')
+                 .replace(/\s*-\s*Episódio.*$/i, '')
+                 .trim();
+    }
     groupedMap.set(name, (groupedMap.get(name) || 0) + row.events);
   }
 
@@ -145,10 +150,9 @@ export function SportsWidget(props: Props) {
   };
 
   const getEmptyLabel = () => {
-    if (activeTab === "Campeonato") return "campeonato";
-    if (activeTab === "Partida") return "partida de futebol/geral";
-    if (activeTab === "Vôlei") return "jogo de vôlei / Superliga";
-    return "canal de transmissão";
+    if (activeTab === "Séries") return "séries";
+    if (activeTab === "Filmes") return "filmes";
+    return "canais de TV";
   };
 
   return (
@@ -157,7 +161,7 @@ export function SportsWidget(props: Props) {
       <div className="flex w-full flex-col gap-2 pb-2">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <TopNTitle>Top Campeonatos & Jogos ao Vivo</TopNTitle>
+            <TopNTitle>Top Filmes, Séries & TV</TopNTitle>
           </div>
           {items.length > 0 && (
             <div
@@ -207,7 +211,7 @@ export function SportsWidget(props: Props) {
               Nenhum dado de {getEmptyLabel()} registrado
             </p>
             <p className="text-xs text-muted-foreground mt-1 max-w-[280px]">
-              Os dados aparecerão aqui em tempo real assim que transmissões forem reproduzidas.
+              Os conteúdos mais assistidos aparecerão aqui em tempo real assim que os clientes reproduzirem.
             </p>
           </div>
         ) : (

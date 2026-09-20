@@ -20,6 +20,7 @@ import { OnboardingDashboard } from "./dashboard/OnboardingDashboard";
 import { TeaserDashboardContainer } from "./dashboard/TeaserDashboardContainer";
 import { VersionWidget } from "./dashboard/VersionWidget";
 import { SportsWidget } from "./dashboard/SportsWidget";
+import { VodMediaWidget } from "./dashboard/VodMediaWidget";
 import { WidgetContainer } from "./dashboard/WidgetContainer";
 import { EventsChartWidget } from "./dashboard/custom-widgets/EventsChartWidget";
 import { RealtimeGaugeCard } from "./dashboard/RealtimeGaugeCard";
@@ -212,6 +213,12 @@ export function Component() {
               <LazyLoad key="sports-games">
                 <div className="rounded-lg border border-border p-4 bg-card h-full shadow-sm">
                   <SportsWidget appId={app.id} />
+                </div>
+              </LazyLoad>
+
+              <LazyLoad key="vod-media">
+                <div className="rounded-lg border border-border p-4 bg-card h-full shadow-sm">
+                  <VodMediaWidget appId={app.id} />
                 </div>
               </LazyLoad>
 
