@@ -7,6 +7,7 @@ import { useAtomValue, useSetAtom } from "jotai/react";
 import { useSearchParams, Navigate, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useLocalStorage } from "@hooks/use-localstorage";
 import { dashboardWidgetsAtom, getDashboardWidgetsForAppAtom } from "../../atoms/widgets-atoms";
 import { dateFilterValuesAtom } from "../../atoms/date-atoms";
 import { topEvents, topEventProps } from "./query";
@@ -97,7 +98,9 @@ export function Component() {
     enabled: !!startDateIso && !!endDateIso && !!granularity,
   });
 
-  // 3. Detecção 100% inteligente baseada na TELEMETRIA do aplicativo
+  // 3. Detecção 100% inteligente baseada na TELEMETRIA do aplicativo (com persistência pós-truncate)
+  const [persistedIsMedia, setPersistedIsMedia] = useLocalStorage<boolean>(`aptabase_stream_app_${app.id}`, false);
+
   const hasSportsTelemetry = useMemo(() => {
     const hasProps = (sportsPropsList || []).some((row) => {
       const key = (row.stringKey || "").toLowerCase().trim();
@@ -112,7 +115,19 @@ export function Component() {
         key === "canal transmissão" ||
         key === "canal transmissao" ||
         key === "canal" ||
-        key === "nome do canal"
+        key === "nome do canal" ||
+        key === "📺 canal" ||
+        key === "🏆 campeonato" ||
+        key === "🏐 vôlei" ||
+        key === "🎬 filme" ||
+        key === "🍿 série" ||
+        key === "filme" ||
+        key === "série" ||
+        key === "serie" ||
+        key === "título do filme" ||
+        key === "título da série" ||
+        key === "nome do filme" ||
+        key === "nome da série"
       );
     });
 
@@ -122,13 +137,22 @@ export function Component() {
         name.includes("jogo") ||
         name.includes("canal") ||
         name.includes("reprodução tv") ||
+        name.includes("reprodução filme") ||
+        name.includes("reprodução episódio") ||
         name.includes("reproduzir canal") ||
-        name.includes("assistir jogo")
+        name.includes("assistir jogo") ||
+        name.includes("reprodução") ||
+        name.includes("reproducao")
       );
     });
 
-    return hasProps || hasEvents;
-  }, [sportsPropsList, topEventsList]);
+    const detected = hasProps || hasEvents;
+    if (detected && !persistedIsMedia) {
+      setPersistedIsMedia(true);
+    }
+
+    return detected || persistedIsMedia;
+  }, [sportsPropsList, topEventsList, persistedIsMedia, setPersistedIsMedia]);
 
   const customWidgets = widgetsConfig.filter((w) => w.type === "custom-events-chart");
 
