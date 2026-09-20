@@ -23,7 +23,31 @@ type MediaTab = "Séries" | "Filmes" | "Canais";
 function isValidTitle(val: string): boolean {
   if (!val) return false;
   const trimmed = val.trim();
-  if (trimmed === "" || trimmed === "null" || trimmed === "undefined") return false;
+  const lower = trimmed.toLowerCase();
+  if (trimmed === "" || trimmed === "null" || trimmed === "undefined" || trimmed === "sem título") return false;
+  
+  // Ignora palavras genéricas e categorias que não são nomes de obras
+  if (
+    lower === "vídeo" ||
+    lower === "video" ||
+    lower === "série" ||
+    lower === "serie" ||
+    lower === "séries" ||
+    lower === "series" ||
+    lower === "filme" ||
+    lower === "filmes" ||
+    lower === "episódio" ||
+    lower === "episodio" ||
+    lower === "conteúdo desconhecido" ||
+    lower === "conteudo desconhecido" ||
+    lower === "geral" ||
+    lower === "desconhecido" ||
+    lower === "tipo" ||
+    lower === "categoria"
+  ) {
+    return false;
+  }
+
   // Ignora URLs e arquivos técnicos de streaming
   if (/^https?:\/\//i.test(trimmed)) return false;
   if (/\.(m3u8|ts|mpd|mp4|mkv|avi)(\?.*)?$/i.test(trimmed)) return false;
@@ -84,7 +108,6 @@ export function VodMediaWidget(props: Props) {
   const rawFiltered = (rows || [])
     .filter((row) => {
       const key = (row.stringKey || "").toLowerCase().trim();
-      const val = (row.stringValue || "").trim();
 
       if (activeTab === "Séries") {
         return (
@@ -103,7 +126,9 @@ export function VodMediaWidget(props: Props) {
           key === "titulo do filme" ||
           key === "nome do filme" ||
           key === "filme" ||
-          key === "🎬 filme"
+          key === "🎬 filme" ||
+          key === "título" ||
+          key === "titulo"
         );
       }
       if (activeTab === "Canais") {
