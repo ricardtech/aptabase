@@ -117,7 +117,11 @@ export function VodMediaWidget(props: Props) {
           key === "nome da serie" ||
           key === "série" ||
           key === "serie" ||
-          key === "🍿 série"
+          key === "🍿 série" ||
+          key === "episódio" ||
+          key === "episodio" ||
+          key === "episódio série" ||
+          key === "episodio serie"
         );
       }
       if (activeTab === "Filmes") {
@@ -135,9 +139,7 @@ export function VodMediaWidget(props: Props) {
         return (
           key === "canal" ||
           key === "nome do canal" ||
-          key === "📺 canal" ||
-          key === "canal transmissão" ||
-          key === "canal transmissao"
+          key === "📺 canal"
         );
       }
       return false;

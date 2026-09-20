@@ -114,9 +114,7 @@ export function SportsWidget(props: Props) {
       if (activeTab === "Canal Transmissão") {
         return (
           key === "canal transmissão" ||
-          key === "canal transmissao" ||
-          key === "canal" ||
-          key === "nome do canal"
+          key === "canal transmissao"
         );
       }
       return false;
