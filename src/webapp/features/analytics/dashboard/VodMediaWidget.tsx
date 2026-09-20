@@ -117,11 +117,7 @@ export function VodMediaWidget(props: Props) {
           key === "nome da serie" ||
           key === "série" ||
           key === "serie" ||
-          key === "🍿 série" ||
-          key === "episódio" ||
-          key === "episodio" ||
-          key === "episódio série" ||
-          key === "episodio serie"
+          key === "🍿 série"
         );
       }
       if (activeTab === "Filmes") {
@@ -146,18 +142,18 @@ export function VodMediaWidget(props: Props) {
     })
     .filter((row) => isValidTitle(row.stringValue));
 
-  // Agrupar itens com o mesmo nome para somar as contagens (agrupando episódios sob a série principal)
+  // Agrupar itens com o mesmo nome para somar as contagens (consolidando sob o nome da série principal)
   const groupedMap = new Map<string, number>();
   for (const row of rawFiltered) {
     let name = row.stringValue.trim();
-    // Se for série e ainda vier com prefixo de temporada/episódio, limpar para o título principal
     if (activeTab === "Séries") {
-      name = name.replace(/\s*-\s*T\d+.*$/i, '')
-                 .replace(/\s*-\s*S\d+.*$/i, '')
-                 .replace(/\s*-\s*E\d+.*$/i, '')
-                 .replace(/\s*-\s*Temp.*$/i, '')
-                 .replace(/\s*-\s*Episódio.*$/i, '')
-                 .trim();
+      // Remove prefixos como S01E06 -, T1E01 -, EP01 -
+      name = name.replace(/^(s\d+e\d+|t\d+e\d+|ep\d+|temp\s*\d+\s*ep\s*\d+)\s*[-:]*\s*/i, "");
+      // Remove sufixos como - S01E06, - S01 E06, - T1, etc.
+      name = name.replace(/\s*[-:]*\s*(s\d+\s*e\d+|t\d+\s*e\d+|ep\d+|temp\s*\d+|episódio\s*\d+).*$/i, "");
+      // Remove anos duplicados como (2026) (2026) -> (2026)
+      name = name.replace(/(\(\d{4}\))\s*\1+/g, "$1");
+      name = name.trim();
     }
     groupedMap.set(name, (groupedMap.get(name) || 0) + row.events);
   }
