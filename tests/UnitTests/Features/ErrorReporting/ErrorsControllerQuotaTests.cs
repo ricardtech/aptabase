@@ -24,10 +24,8 @@ namespace Aptabase.UnitTests.Features.ErrorReporting;
 public class ErrorsControllerQuotaTests
 {
     private const string AppId = "APP-123";
-    private const string AppKey = "A-DEV-000";
 
     private readonly Mock<IErrorBuffer> _buffer = new();
-    private readonly Mock<IIngestionCache> _ingestionCache = new();
     private readonly Mock<IPiiSanitizer> _piiSanitizer = new();
     private readonly Mock<IErrorQueryClient> _errorQueryClient = new();
     private readonly Mock<IDbContext> _db = new();
@@ -35,10 +33,6 @@ public class ErrorsControllerQuotaTests
 
     public ErrorsControllerQuotaTests()
     {
-        _ingestionCache
-            .Setup(c => c.FindByAppKey(AppKey, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new CachedApplication(new Application { Id = AppId }));
-
         _piiSanitizer
             .Setup(s => s.Sanitize(It.IsAny<string?>()))
             .Returns<string?>(text => text ?? "");
@@ -100,7 +94,6 @@ public class ErrorsControllerQuotaTests
     {
         var controller = new ErrorsController(
             _buffer.Object,
-            _ingestionCache.Object,
             _piiSanitizer.Object,
             _errorQueryClient.Object,
             _db.Object,
@@ -111,7 +104,8 @@ public class ErrorsControllerQuotaTests
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
 
-        controller.HttpContext.Request.Headers["App-Key"] = AppKey;
+        // In the pipeline ResolveErrorAppKey resolves the App-Key before the action runs
+        ResolveAppKeyAttribute.SetApp(controller.HttpContext, new CachedApplication(new Application { Id = AppId }));
         return controller;
     }
 

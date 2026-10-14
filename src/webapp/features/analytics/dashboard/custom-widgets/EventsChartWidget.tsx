@@ -1,4 +1,3 @@
-import { trackEvent } from "@aptabase/web";
 import { Button } from "@components/Button";
 import { EventNameFilterDropdown } from "@features/analytics/sessions/filters/EventNameFilterDropdown";
 import { useApps } from "@features/apps";
@@ -166,16 +165,6 @@ export function EventsChartWidget(props: Props) {
       }))
     );
   }, [visibleData, eventsChartSeriesConfig, startDateIso]);
-
-  useEffect(() => {
-    if (!startDateIso || !endDateIso) return;
-
-    trackEvent("custom_events_chart_viewed", {
-      startDate: startDateIso,
-      endDate: endDateIso,
-      name: props.appName,
-    });
-  }, [startDateIso, endDateIso, props.appName]);
 
   const total = useMemo(
     () =>

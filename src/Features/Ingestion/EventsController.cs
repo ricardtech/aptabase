@@ -11,16 +11,13 @@ namespace Aptabase.Features.Ingestion;
 public class EventsController : Controller
 {
     private readonly ILogger _logger;
-    private readonly IIngestionCache _cache;
     private readonly IEventBuffer _buffer;
     private readonly GeoIPClient _geoIP;
 
-    public EventsController(IIngestionCache cache,
-                            IEventBuffer buffer,
+    public EventsController(IEventBuffer buffer,
                             GeoIPClient geoIP,
                             ILogger<EventsController> logger)
     {
-        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
         _geoIP = geoIP ?? throw new ArgumentNullException(nameof(geoIP));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -29,11 +26,11 @@ public class EventsController : Controller
     [HttpPost("/api/v0/event")]
     [EnableCors("AllowAny")]
     [EnableRateLimiting("EventIngestion")]
-    public async Task<IActionResult> Single(
+    [ResolveAppKey]
+    public IActionResult Single(
         [FromHeader(Name = "App-Key")] string? appKey,
         [FromHeader(Name = "User-Agent")] string? userAgent,
-        [FromBody] EventBody body,
-        CancellationToken cancellationToken
+        [FromBody] EventBody body
     )
     {
         appKey = appKey?.ToUpper() ?? "";
@@ -45,12 +42,7 @@ public class EventsController : Controller
             return BadRequest(validationMessage);
         }
 
-        var app = await _cache.FindByAppKey(appKey, cancellationToken);
-        if (string.IsNullOrEmpty(app.Id))
-            return AppNotFound(appKey);
-
-        if (app.IsLocked) 
-            return BadRequest($"Owner account is locked.");
+        var app = ResolveAppKeyAttribute.GetApp(HttpContext);
 
         if (IsBotOrCrawler(userAgent))
         {
@@ -114,11 +106,11 @@ public class EventsController : Controller
     [HttpPost("/api/v0/events")]
     [EnableCors("AllowAny")]
     [EnableRateLimiting("EventIngestion")]
-    public async Task<IActionResult> Multiple(
+    [ResolveAppKey]
+    public IActionResult Multiple(
         [FromHeader(Name = "App-Key")] string? appKey,
         [FromHeader(Name = "User-Agent")] string? userAgent,
-        [FromBody] EventBody[] events,
-        CancellationToken cancellationToken
+        [FromBody] EventBody[] events
     )
     {
         appKey = appKey?.ToUpper() ?? "";
@@ -136,12 +128,7 @@ public class EventsController : Controller
         if (!validEvents.Any())
             return Ok(new { });
 
-        var app = await _cache.FindByAppKey(appKey, cancellationToken);
-        if (string.IsNullOrEmpty(app.Id))
-            return AppNotFound(appKey);
-
-        if (app.IsLocked) 
-            return BadRequest($"Owner account is locked.");
+        var app = ResolveAppKeyAttribute.GetApp(HttpContext);
 
         if (IsBotOrCrawler(userAgent))
         {
@@ -198,12 +185,6 @@ public class EventsController : Controller
     public IActionResult OptionsMultiple()
     {
         return Ok();
-    }
-
-    private IActionResult AppNotFound(string appKey)
-    {
-        _logger.LogWarning("Appplication not found with given app key: {AppKey}", appKey);
-        return NotFound($"Appplication not found with given app key: {appKey}");
     }
 
     private static void EnrichOperatingSystemAndBrowser(EventBody body, string? userAgent)
