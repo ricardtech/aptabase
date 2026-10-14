@@ -6,8 +6,7 @@ import { IconShare } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai/react";
 import { useSearchParams, Navigate, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { useLocalStorage } from "@hooks/use-localstorage";
+import { useMemo, useEffect } from "react";
 import { dashboardWidgetsAtom, getDashboardWidgetsForAppAtom } from "../../atoms/widgets-atoms";
 import { dateFilterValuesAtom } from "../../atoms/date-atoms";
 import { topEvents, topEventProps } from "./query";
@@ -98,23 +97,42 @@ export function Component() {
     enabled: !!startDateIso && !!endDateIso && !!granularity,
   });
 
-  // 3. Detecção 100% inteligente baseada na TELEMETRIA do aplicativo (com persistência pós-truncate)
-  const [persistedIsMedia, setPersistedIsMedia] = useLocalStorage<boolean>(`aptabase_stream_app_${app.id}`, false);
+  // 3. Limpeza preventiva de chaves residuais de localStorage que contaminavam outros apps
+  useEffect(() => {
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const k = window.localStorage.key(i);
+        if (k && k.startsWith("aptabase_stream_app_")) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach((k) => window.localStorage.removeItem(k));
+    } catch (_) {}
+  }, []);
 
+  // 4. Detecção 100% inteligente baseada na TELEMETRIA do aplicativo e identificação de streaming
   const hasSportsTelemetry = useMemo(() => {
+    // A. Reconhecimento automático se o aplicativo for de streaming (ex: Play Max)
+    const normalizedAppName = (app.name || "").toLowerCase();
+    const isKnownStreamingApp =
+      normalizedAppName.includes("play max") ||
+      normalizedAppName.includes("playmax") ||
+      normalizedAppName.includes("iptv") ||
+      normalizedAppName.includes("player");
+
+    // B. Propriedades estritamente de mídia/streaming (filmes, séries, partidas, esportes, vôlei)
     const hasProps = (sportsPropsList || []).some((row) => {
       const key = (row.stringKey || "").toLowerCase().trim();
       return (
         key === "campeonato" ||
         key === "partida" ||
-        key === "jogo" ||
         key === "confronto" ||
         key === "vôlei" ||
         key === "volei" ||
         key === "superliga" ||
         key === "canal transmissão" ||
         key === "canal transmissao" ||
-        key === "canal" ||
         key === "nome do canal" ||
         key === "📺 canal" ||
         key === "🏆 campeonato" ||
@@ -131,28 +149,28 @@ export function Component() {
       );
     });
 
+    // C. Eventos estritamente de reprodução de mídia/streaming
     const hasEvents = (topEventsList || []).some((ev) => {
       const name = (ev.name || "").toLowerCase().trim();
       return (
-        name.includes("jogo") ||
-        name.includes("canal") ||
         name.includes("reprodução tv") ||
+        name.includes("reproducao tv") ||
         name.includes("reprodução filme") ||
+        name.includes("reproducao filme") ||
         name.includes("reprodução episódio") ||
+        name.includes("reproducao episodio") ||
         name.includes("reproduzir canal") ||
         name.includes("assistir jogo") ||
-        name.includes("reprodução") ||
-        name.includes("reproducao")
+        name.includes("assistir canal") ||
+        name.includes("stream_start") ||
+        name.includes("play_media") ||
+        name.includes("vod_play") ||
+        name.includes("player_play")
       );
     });
 
-    const detected = hasProps || hasEvents;
-    if (detected && !persistedIsMedia) {
-      setPersistedIsMedia(true);
-    }
-
-    return detected || persistedIsMedia;
-  }, [sportsPropsList, topEventsList, persistedIsMedia, setPersistedIsMedia]);
+    return isKnownStreamingApp || hasProps || hasEvents;
+  }, [app.name, sportsPropsList, topEventsList]);
 
   const customWidgets = widgetsConfig.filter((w) => w.type === "custom-events-chart");
 
