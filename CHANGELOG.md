@@ -6,6 +6,16 @@ O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 ---
 
+## [v2.8.1] - 2026-10-31
+
+### 🛠️ Correções
+- **Liberação de Embutimento em Iframes (RicardHub)**:
+  - Remoção do cabeçalho `X-Frame-Options: DENY` em `src/Program.cs` na resposta de fallback da SPA de produção.
+  - Atualização da política `Content-Security-Policy` adicionando a diretiva `frame-ancestors 'self' https://hub.ricardtech.top http://hub.ricardtech.top https://*.ricardtech.top;`.
+  - Permite visualização e navegação fluida da telemetria diretamente nas abas operacionais do **Ricard Hub**.
+
+---
+
 ## [v2.8.0] - 2026-10-14
 
 ### 🚀 Novidades e Melhorias
