@@ -82,7 +82,7 @@ export function SportsWidget(props: Props) {
     { key: "Campeonato", label: "Campeonatos", icon: <IconTrophy className="w-3.5 h-3.5" /> },
     { key: "Partida", label: "Partidas", icon: <IconBallFootball className="w-3.5 h-3.5" /> },
     { key: "Vôlei", label: "Vôlei", icon: <IconBallVolleyball className="w-3.5 h-3.5" /> },
-    { key: "Canal Transmissão", label: "Canais", icon: <IconDeviceTv className="w-3.5 h-3.5" /> },
+    { key: "Canal Transmissão", label: "Canais de Jogos", icon: <IconDeviceTv className="w-3.5 h-3.5" /> },
   ];
 
   const rawFiltered = (rows || [])
@@ -115,9 +115,9 @@ export function SportsWidget(props: Props) {
         return (
           key === "canal transmissão" ||
           key === "canal transmissao" ||
-          key === "canal" ||
-          key === "nome do canal" ||
-          key === "📺 canal"
+          key === "canal de jogo" ||
+          key === "canal jogo" ||
+          key === "canal do jogo"
         );
       }
       return false;

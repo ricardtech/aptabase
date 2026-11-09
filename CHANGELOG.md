@@ -6,6 +6,19 @@ O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 ---
 
+## [v2.8.2] - 2026-11-08
+
+### 🛠️ Correções e Melhorias
+- **Isolamento de Canais de Jogos no SportsWidget**:
+  - Remoção de filtros genéricos (`canal`, `nome do canal`, `📺 canal`) da aba de canais de transmissão esportiva, restringindo a chaves estritamente ligadas a partidas (`canal transmissão`, `canal de jogo`, `canal do jogo`).
+  - Evita repetição e poluição visual de canais de TV normais (Globo, etc.) no card de esportes, mantendo-os centralizados no card dedicado de Mídia VOD & TV.
+- **Suporte Automático a Streaming no Max Vision**:
+  - Inclusão do app **Max Vision** (`max vision` e `maxvision`) na lista nativa de detecção de players de streaming no dashboard (`hasSportsTelemetry`).
+- **Elevação de Versão**:
+  - Atualização do painel e assets SPA para a versão `v2.8.2`.
+
+---
+
 ## [v2.8.1] - 2026-10-31
 
 ### 🛠️ Correções

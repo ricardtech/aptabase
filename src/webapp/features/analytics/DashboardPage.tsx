@@ -113,11 +113,13 @@ export function Component() {
 
   // 4. Detecção 100% inteligente baseada na TELEMETRIA do aplicativo e identificação de streaming
   const hasSportsTelemetry = useMemo(() => {
-    // A. Reconhecimento automático se o aplicativo for de streaming (ex: Play Max)
+    // A. Reconhecimento automático se o aplicativo for de streaming (ex: Play Max, Max Vision)
     const normalizedAppName = (app.name || "").toLowerCase();
     const isKnownStreamingApp =
       normalizedAppName.includes("play max") ||
       normalizedAppName.includes("playmax") ||
+      normalizedAppName.includes("max vision") ||
+      normalizedAppName.includes("maxvision") ||
       normalizedAppName.includes("iptv") ||
       normalizedAppName.includes("player");
 
