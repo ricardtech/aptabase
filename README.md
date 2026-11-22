@@ -17,6 +17,14 @@
 
 # Sobre o Projeto
 
+<!-- ricardtech-metrics:start -->
+<p align="center">
+  <a href="https://github.com/alaxricardsilva/ricardtech-metrics">
+    <img src="https://raw.githubusercontent.com/alaxricardsilva/ricardtech-metrics/main/charts/aptabase.svg" alt="Métricas do Repositório" />
+  </a>
+</p>
+<!-- ricardtech-metrics:end -->
+
 O [Aptabase](https://github.com/ricardtech/aptabase) é uma alternativa open-source moderna ao Firebase Analytics e Google Analytics, especialmente desenvolvida para aplicativos Mobile (Android, iOS), Desktop e Web Apps.
 
 📱 **Ampla lista de SDKs**: Compatível com as principais linguagens e frameworks do mercado: Kotlin/Android, Flutter, React Native, Swift, Electron, Tauri, Web (JavaScript/TypeScript), .NET MAUI e Unity.
