@@ -13,6 +13,13 @@ import { formatNumber } from "@fns/format-number";
 import { useLocalStorage } from "@hooks/use-localstorage";
 import { twMerge } from "tailwind-merge";
 import { IconTrophy, IconBallFootball, IconBallVolleyball, IconDeviceTv, IconSparkles } from "@tabler/icons-react";
+import {
+  extractChampionship,
+  isChannelPropertyKey,
+  isMatchTitle,
+  isSportsChannel,
+  isVoleiText,
+} from "./sports-classifier";
 
 type Props = {
   appId: string;
@@ -88,37 +95,35 @@ export function SportsWidget(props: Props) {
   const rawFiltered = (rows || [])
     .filter((row) => {
       const key = (row.stringKey || "").toLowerCase().trim();
-      const val = (row.stringValue || "").toLowerCase().trim();
+      const val = row.stringValue || "";
 
       if (activeTab === "Campeonato") {
-        return key === "campeonato" || key === "liga" || key === "torneio";
+        if (key === "campeonato" || key === "liga" || key === "torneio") return true;
+        return isChannelPropertyKey(key) && extractChampionship(val) !== null;
       }
       if (activeTab === "Partida") {
-        return key === "partida" || key === "jogo" || key === "confronto";
+        if (key === "partida" || key === "jogo" || key === "confronto") return true;
+        return isChannelPropertyKey(key) && isMatchTitle(val) && !isVoleiText(val);
       }
       if (activeTab === "Vôlei") {
         const isVoleiKey = key === "vôlei" || key === "volei" || key === "superliga" || key === "vnl";
-        const isVoleiVal =
-          val.includes("vôlei") ||
-          val.includes("volei") ||
-          val.includes("superliga") ||
-          val.includes("vnl") ||
-          val.includes("sada cruzeiro") ||
-          val.includes("praia clube") ||
-          val.includes("minas") ||
-          val.includes("osasco") ||
-          val.includes("sesi") ||
-          val.includes("joinville vôlei");
-        return isVoleiKey || ((key === "partida" || key === "jogo" || key === "campeonato") && isVoleiVal);
+        return (
+          isVoleiKey ||
+          ((key === "partida" || key === "jogo" || key === "campeonato" || isChannelPropertyKey(key)) &&
+            isVoleiText(val))
+        );
       }
       if (activeTab === "Canal Transmissão") {
-        return (
+        if (
           key === "canal transmissão" ||
           key === "canal transmissao" ||
           key === "canal de jogo" ||
           key === "canal jogo" ||
           key === "canal do jogo"
-        );
+        ) {
+          return true;
+        }
+        return isChannelPropertyKey(key) && isSportsChannel(val);
       }
       return false;
     })
@@ -127,7 +132,11 @@ export function SportsWidget(props: Props) {
   // Agrupar itens com o mesmo nome para somar as contagens e evitar duplicatas
   const groupedMap = new Map<string, number>();
   for (const row of rawFiltered) {
-    const name = row.stringValue.trim();
+    const key = (row.stringKey || "").toLowerCase().trim();
+    let name = row.stringValue.trim();
+    if (activeTab === "Campeonato" && isChannelPropertyKey(key)) {
+      name = extractChampionship(name) || name;
+    }
     groupedMap.set(name, (groupedMap.get(name) || 0) + row.events);
   }
 

@@ -6,6 +6,19 @@ O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 ---
 
+## [v2.8.3] - 2026-11-24
+
+### 🚀 Novidades e Melhorias
+- **Classificação Automática de Esportes, Campeonatos e Jogos ao Vivo (`sports-classifier.ts`)**:
+  - Adicionado classificador inteligente no frontend para detectar automaticamente partidas ao vivo (`HH:MM - Time A x Time B`), jogos de vôlei/Superliga/VNL, campeonatos (`Brasileirão`, `Libertadores`, `Copa do Brasil`, `Champions League`, `NBA`, `UFC`, etc.) e canais esportivos dedicados (`Premiere`, `SporTV`, `ESPN`, `CazéTV`, `Combate`, `TNT Sports`, etc.) a partir da propriedade genérica `"Canal"`.
+  - Funciona retroativamente com dados existentes no ClickHouse e para todos os players (Play Max, IBO Player Pro, IBO One, etc.) sem exigir alterações nos aplicativos clientes.
+- **Separação Limpa no `VodMediaWidget` (`Top Canais`)**:
+  - Exclusão automática de títulos de partidas ao vivo da aba **Top Canais**, mantendo-os centralizados no card **Top Campeonatos & Jogos ao Vivo**.
+- **Elevação de Versão**:
+  - Atualização do painel e assets SPA para a versão `v2.8.3`.
+
+---
+
 ## [v2.8.2] - 2026-11-08
 
 ### 🛠️ Correções e Melhorias
