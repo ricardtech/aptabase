@@ -13,7 +13,7 @@ import { formatNumber } from "@fns/format-number";
 import { useLocalStorage } from "@hooks/use-localstorage";
 import { twMerge } from "tailwind-merge";
 import { IconMovie, IconVideo, IconDeviceTv, IconSparkles } from "@tabler/icons-react";
-import { isMatchTitle } from "./sports-classifier";
+import { isMatchTitle, isSportsChannel } from "./sports-classifier";
 
 type Props = {
   appId: string;
@@ -135,7 +135,8 @@ export function VodMediaWidget(props: Props) {
       if (activeTab === "Canais") {
         return (
           (key === "canal" || key === "nome do canal" || key === "📺 canal") &&
-          !isMatchTitle(row.stringValue)
+          !isMatchTitle(row.stringValue) &&
+          !isSportsChannel(row.stringValue)
         );
       }
       return false;

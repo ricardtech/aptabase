@@ -114,7 +114,7 @@ export function isSportsChannel(val: string): boolean {
     return true;
   }
 
-  return isMatchTitle(val);
+  return false;
 }
 
 /**

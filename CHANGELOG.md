@@ -6,6 +6,15 @@ O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 ---
 
+## [v2.8.4] - 2026-11-24
+
+### 🛠️ Correções
+- **Eliminação de Duplicação entre `Canais de Jogos`, `Partidas` e `Top Canais`**:
+  - Removida a inclusão de títulos de partidas ao vivo (`HH:MM - Time A x Time B`) da aba **Canais de Jogos** no `sports-classifier.ts`, mantendo-os exclusivamente na aba **Partidas**.
+  - Adicionado filtro `!isSportsChannel(...)` no `VodMediaWidget.tsx` (**Top Canais**) para evitar que canais esportivos (`Premiere`, `SporTV`, `ESPN`, etc.) apareçam duplicados nos dois cards simultaneamente.
+
+---
+
 ## [v2.8.3] - 2026-11-24
 
 ### 🚀 Novidades e Melhorias

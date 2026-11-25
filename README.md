@@ -81,7 +81,7 @@ services:
       retries: 5
 
   aptabase:
-    image: alaxricard/aptabase:2.8.3
+    image: alaxricard/aptabase:2.8.4
     restart: always
     ports:
       - "127.0.0.1:8190:8080"
