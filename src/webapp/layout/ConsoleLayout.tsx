@@ -4,13 +4,28 @@ import { UpdateNotifier } from "@components/UpdateNotifier";
 import { AppSelector } from "../features/apps";
 import { useAuthState } from "../features/auth";
 import { MobileSidebar, NavMenu, UserMenu } from "../features/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { APP_VERSION, COMPANY_NAME, COPYRIGHT_YEAR } from "../version";
 
 export function ConsoleLayout() {
   const auth = useAuthState();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Preload dos chunks principais (DashboardPage + chartjs) em idle após autenticação
+  useEffect(() => {
+    if (!auth.user) return;
+    const preload = () => {
+      void import("../features/analytics/DashboardPage");
+      void import("chart.js");
+    };
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(preload, { timeout: 1500 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+    const timerId = setTimeout(preload, 200);
+    return () => clearTimeout(timerId);
+  }, [auth.user]);
 
   if (!auth.user) {
     return <Navigate to="/auth" replace={true} />;

@@ -4,12 +4,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@compo
 import { useApps, useCurrentApp } from "@features/apps";
 import { IconShare } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai/react";
-import { useSearchParams, Navigate, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useMemo, useEffect } from "react";
 import { dashboardWidgetsAtom, getDashboardWidgetsForAppAtom } from "../../atoms/widgets-atoms";
-import { dateFilterValuesAtom } from "../../atoms/date-atoms";
-import { topEvents, topEventProps } from "./query";
+import { useTopEventPropsQuery, useTopEventsQuery } from "./useAnalyticsQueries";
 import { CurrentFilters } from "./CurrentFilters";
 import { AppShareInfo } from "./dashboard/AppShareInfo";
 import { CountryWidget } from "./dashboard/CountryWidget";
@@ -36,12 +34,6 @@ export function Component() {
   const { buildMode } = useApps();
   const app = useCurrentApp();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { startDateIso, endDateIso, granularity } = useAtomValue(dateFilterValuesAtom);
-
-  const countryCode = searchParams.get("countryCode") || "";
-  const appVersion = searchParams.get("appVersion") || "";
-  const osName = searchParams.get("osName") || "";
 
   if (!app) return <Navigate to="/" />;
   if (app.lockReason) {
@@ -61,41 +53,11 @@ export function Component() {
   const widgetsConfig = getWidgetsForApp(app.id);
   const setWidgetsConfig = useSetAtom(dashboardWidgetsAtom);
 
-  // 1. Consulta de propriedades de telemetria enviadas pelo app
-  const { data: sportsPropsList } = useQuery({
-    queryKey: ["top-sports-detect", buildMode, app.id, startDateIso, endDateIso, countryCode, appVersion, osName],
-    queryFn: () =>
-      topEventProps({
-        buildMode,
-        appId: app.id,
-        startDate: startDateIso,
-        endDate: endDateIso,
-        granularity,
-        countryCode,
-        appVersion,
-        osName,
-      }),
-    staleTime: 30000,
-    enabled: !!startDateIso && !!endDateIso && !!granularity,
-  });
+  // 1. Consulta compartilhada de propriedades de telemetria (mesma queryKey de SportsWidget/VodMediaWidget)
+  const { data: sportsPropsList } = useTopEventPropsQuery(app.id);
 
-  // 2. Consulta de eventos de telemetria enviados pelo app
-  const { data: topEventsList } = useQuery({
-    queryKey: ["top-events-detect", buildMode, app.id, startDateIso, endDateIso, countryCode, appVersion, osName],
-    queryFn: () =>
-      topEvents({
-        buildMode,
-        appId: app.id,
-        startDate: startDateIso,
-        endDate: endDateIso,
-        granularity,
-        countryCode,
-        appVersion,
-        osName,
-      }),
-    staleTime: 30000,
-    enabled: !!startDateIso && !!endDateIso && !!granularity,
-  });
+  // 2. Consulta compartilhada de eventos de telemetria (mesma queryKey de EventWidget)
+  const { data: topEventsList } = useTopEventsQuery(app.id);
 
   // 3. Limpeza preventiva de chaves residuais de localStorage que contaminavam outros apps
   useEffect(() => {

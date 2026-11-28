@@ -1,10 +1,5 @@
-import { useApps } from "@features/apps";
-import { useQuery } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { dateFilterValuesAtom } from "../../../atoms/date-atoms";
-import { topEventProps } from "../query";
+import { useTopEventPropsQuery } from "../useAnalyticsQueries";
 import { TopNTitle } from "./TopNTitle";
 import { TopNSkeleton } from "./TopNSkeleton";
 import { ErrorState } from "@components/ErrorState";
@@ -43,14 +38,6 @@ function isValidTitle(val: string): boolean {
 }
 
 export function SportsWidget(props: Props) {
-  const { buildMode } = useApps();
-  const [searchParams] = useSearchParams();
-  const { startDateIso, endDateIso, granularity } = useAtomValue(dateFilterValuesAtom);
-
-  const countryCode = searchParams.get("countryCode") || "";
-  const appVersion = searchParams.get("appVersion") || "";
-  const osName = searchParams.get("osName") || "";
-
   const [activeTab, setActiveTab] = useState<SportsTab>("Campeonato");
   const [format, setFormat] = useLocalStorage<"absolute" | "percentage">("top_n_sports_format", "absolute");
 
@@ -59,31 +46,7 @@ export function SportsWidget(props: Props) {
     isError,
     data: rows,
     refetch,
-  } = useQuery({
-    queryKey: [
-      "top-sports-props",
-      buildMode,
-      props.appId,
-      startDateIso,
-      endDateIso,
-      countryCode,
-      appVersion,
-      osName,
-    ],
-    queryFn: () =>
-      topEventProps({
-        buildMode,
-        appId: props.appId,
-        startDate: startDateIso,
-        endDate: endDateIso,
-        granularity,
-        countryCode,
-        appVersion,
-        osName,
-      }),
-    staleTime: 10000,
-    enabled: !!startDateIso && !!endDateIso && !!granularity,
-  });
+  } = useTopEventPropsQuery(props.appId);
 
   const availableTabs: { key: SportsTab; label: string; icon: React.ReactNode }[] = [
     { key: "Campeonato", label: "Campeonatos", icon: <IconTrophy className="w-3.5 h-3.5" /> },

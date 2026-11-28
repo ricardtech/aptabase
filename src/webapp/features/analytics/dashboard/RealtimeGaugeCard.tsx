@@ -21,16 +21,16 @@ type Props = {
 export function RealtimeGaugeCard({ appId, className = "" }: Props) {
   const { buildMode } = useApps();
 
-  // Polling automático a cada 10 segundos em tempo real
+  // Polling automático a cada 10 segundos em tempo real (compartilha queryKey com LiveViewPage)
   const { data: geoPoints, isLoading: isLoadingGeo } = useQuery({
-    queryKey: ["live-geo-gauge", appId, buildMode],
+    queryKey: ["live-geo", appId, buildMode],
     queryFn: () => liveGeoDataPoints({ appId, buildMode }),
     refetchInterval: 10000,
     staleTime: 5000,
   });
 
   const { data: recentSessions, isLoading: isLoadingSessions } = useQuery({
-    queryKey: ["live-sessions-gauge", appId, buildMode],
+    queryKey: ["live-sessions", appId, buildMode],
     queryFn: () => liveRecentSessions({ appId, buildMode }),
     refetchInterval: 10000,
     staleTime: 5000,

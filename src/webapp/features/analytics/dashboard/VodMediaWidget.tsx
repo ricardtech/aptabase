@@ -1,10 +1,5 @@
-import { useApps } from "@features/apps";
-import { useQuery } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { dateFilterValuesAtom } from "../../../atoms/date-atoms";
-import { topEventProps } from "../query";
+import { useTopEventPropsQuery } from "../useAnalyticsQueries";
 import { TopNTitle } from "./TopNTitle";
 import { TopNSkeleton } from "./TopNSkeleton";
 import { ErrorState } from "@components/ErrorState";
@@ -58,14 +53,6 @@ function isValidTitle(val: string): boolean {
 }
 
 export function VodMediaWidget(props: Props) {
-  const { buildMode } = useApps();
-  const [searchParams] = useSearchParams();
-  const { startDateIso, endDateIso, granularity } = useAtomValue(dateFilterValuesAtom);
-
-  const countryCode = searchParams.get("countryCode") || "";
-  const appVersion = searchParams.get("appVersion") || "";
-  const osName = searchParams.get("osName") || "";
-
   const [activeTab, setActiveTab] = useState<MediaTab>("Séries");
   const [format, setFormat] = useLocalStorage<"absolute" | "percentage">("top_n_media_format", "absolute");
 
@@ -74,31 +61,7 @@ export function VodMediaWidget(props: Props) {
     isError,
     data: rows,
     refetch,
-  } = useQuery({
-    queryKey: [
-      "top-media-props",
-      buildMode,
-      props.appId,
-      startDateIso,
-      endDateIso,
-      countryCode,
-      appVersion,
-      osName,
-    ],
-    queryFn: () =>
-      topEventProps({
-        buildMode,
-        appId: props.appId,
-        startDate: startDateIso,
-        endDate: endDateIso,
-        granularity,
-        countryCode,
-        appVersion,
-        osName,
-      }),
-    staleTime: 10000,
-    enabled: !!startDateIso && !!endDateIso && !!granularity,
-  });
+  } = useTopEventPropsQuery(props.appId);
 
   const availableTabs: { key: MediaTab; label: string; icon: React.ReactNode }[] = [
     { key: "Séries", label: "Top Séries", icon: <IconVideo className="w-3.5 h-3.5" /> },

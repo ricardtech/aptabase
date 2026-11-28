@@ -46,7 +46,7 @@ export function TopNDataContainer(props: Props) {
         eventName,
         osName,
       }),
-    staleTime: 10000,
+    staleTime: 30000,
     enabled: !!startDateIso && !!endDateIso && !!granularity,
   });
 

@@ -6,6 +6,22 @@ O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 ---
 
+## [v2.8.5] - 28/11/2026
+
+### ⚡ Otimizações de Performance e Carregamento
+- **Unificação de `queryKey` no TanStack Query (`useAnalyticsQueries.ts`)**:
+  - Criados hooks compartilhados `useTopEventPropsQuery` e `useTopEventsQuery` para que `DashboardPage`, `SportsWidget`, `VodMediaWidget`, `TopEventProps` e `EventWidget` (`TopNDataContainer`) compartilhem exatamente o mesmo cache e deduplicação em voo, eliminando consultas repetidas ao ClickHouse na abertura do painel.
+  - Unificadas as `queryKey` de tempo real (`["live-geo", ...]` e `["live-sessions", ...]`) no `RealtimeGaugeCard.tsx` com `LiveViewPage` e `RecentSessionsList`.
+- **Preload de Chunks em Idle (`ConsoleLayout.tsx`)**:
+  - Implementado pré-carregamento em segundo plano (`requestIdleCallback` com fallback) dos chunks `DashboardPage` e `chart.js` logo após a autenticação, eliminando o *waterfall* de rede na transição para o painel.
+- **Cache Curto em Memória no Backend (`StatsController.cs`)**:
+  - Adicionado cache `IMemoryCache` de 20 segundos (`GetOrCreateCachedAsync`) nos endpoints `/_stats/top-props`, `/_stats/top-*` (`TopN`) e `/_stats/metrics` (`KeyMetrics`), reduzindo drasticamente a carga de `top_props__v2`, `top_n__v2` e `key_metrics__v2` no ClickHouse ao alternar entre aplicativos ou recarregar o painel.
+
+### 📊 Métricas de Código
+- **Total**: **27.391 linhas** de código em **358 arquivos-fonte** (`149` `.cs` · `171` `.tsx` · `35` `.ts` · `3` `.css`).
+
+---
+
 ## [v2.8.4] - 2026-11-24
 
 ### 🛠️ Correções

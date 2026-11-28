@@ -2,6 +2,7 @@ using Aptabase.Features.Authentication;
 using Aptabase.Features.GeoIP;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Aptabase.Features.Stats;
 
@@ -206,13 +207,16 @@ public class QueryParams : IAppScopedRequest
 [EnableRateLimiting("Stats")]
 public class StatsController : Controller
 {
+    private static readonly TimeSpan StatsCacheTtl = TimeSpan.FromSeconds(20);
     private readonly IQueryClient _queryClient;
     private readonly GeoIPClient _geodb;
+    private readonly IMemoryCache _cache;
 
-    public StatsController(IQueryClient queryClient, GeoIPClient geodb)
+    public StatsController(IQueryClient queryClient, GeoIPClient geodb, IMemoryCache cache)
     {
         _geodb = geodb ?? throw new ArgumentNullException(nameof(geodb));
         _queryClient = queryClient ?? throw new ArgumentNullException(nameof(queryClient));
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     }
 
     [HttpGet("/api/_stats/top-countries")]
@@ -301,17 +305,24 @@ public class StatsController : Controller
     public async Task<IActionResult> EventProps([FromQuery] QueryParams body, CancellationToken cancellationToken)
     {
         var query = body.Parse();
-        var rows = await _queryClient.NamedQueryAsync<EventPropsItem>("top_props__v2", new {
-            date_from = query.DateFrom?.ToString("yyyy-MM-dd HH:mm:ss"),
-            date_to = query.DateTo?.ToString("yyyy-MM-dd HH:mm:ss"),
-            granularity = (body.Granularity ?? GranularityEnum.Hour).ToString(),
-            app_id = query.AppId,
-            event_name = query.EventName,
-            os_name = query.OsName,
-            app_version = query.AppVersion,
-            country_code = query.CountryCode,
-            device_model = query.DeviceModel,
-        }, cancellationToken);
+        var granularity = (body.Granularity ?? GranularityEnum.Hour).ToString();
+        var cacheKey = BuildStatsCacheKey("top-props", query, granularity);
+
+        var rows = await GetOrCreateCachedAsync(cacheKey, async () =>
+        {
+            var result = await _queryClient.NamedQueryAsync<EventPropsItem>("top_props__v2", new {
+                date_from = query.DateFrom?.ToString("yyyy-MM-dd HH:mm:ss"),
+                date_to = query.DateTo?.ToString("yyyy-MM-dd HH:mm:ss"),
+                granularity,
+                app_id = query.AppId,
+                event_name = query.EventName,
+                os_name = query.OsName,
+                app_version = query.AppVersion,
+                country_code = query.CountryCode,
+                device_model = query.DeviceModel,
+            }, cancellationToken);
+            return result.ToList();
+        });
 
         return Ok(rows);
     }
@@ -382,36 +393,63 @@ public class StatsController : Controller
 
     private async Task<KeyMetricsRow> GetKeyMetrics(QueryArgs args, CancellationToken cancellationToken)
     {
-        return await _queryClient.NamedQuerySingleAsync<KeyMetricsRow>("key_metrics__v2", new {
-            date_from = args.DateFrom?.ToString("yyyy-MM-dd HH:mm:ss"),
-            date_to = args.DateTo?.ToString("yyyy-MM-dd HH:mm:ss"),
-            granularity = (args.Granularity ?? GranularityEnum.Hour).ToString(),
-            app_id = args.AppId,
-            event_name = args.EventName,
-            os_name = args.OsName,
-            app_version = args.AppVersion,
-            country_code = args.CountryCode,
-            device_model = args.DeviceModel,
-        }, cancellationToken);
+        var granularity = (args.Granularity ?? GranularityEnum.Hour).ToString();
+        var cacheKey = BuildStatsCacheKey("key-metrics", args, granularity);
+
+        return await GetOrCreateCachedAsync(cacheKey, () =>
+            _queryClient.NamedQuerySingleAsync<KeyMetricsRow>("key_metrics__v2", new {
+                date_from = args.DateFrom?.ToString("yyyy-MM-dd HH:mm:ss"),
+                date_to = args.DateTo?.ToString("yyyy-MM-dd HH:mm:ss"),
+                granularity,
+                app_id = args.AppId,
+                event_name = args.EventName,
+                os_name = args.OsName,
+                app_version = args.AppVersion,
+                country_code = args.CountryCode,
+                device_model = args.DeviceModel,
+            }, cancellationToken));
     }
 
     private async Task<IActionResult> TopN(string nameColumn, GranularityEnum granularity, TopNValue valueColumn, QueryParams body, CancellationToken cancellationToken)
     {
         var query = body.Parse();
-        var rows = await _queryClient.NamedQueryAsync<TopNItem>("top_n__v2", new {
-            name_column = nameColumn,
-            granularity = granularity.ToString(),
-            value_column = valueColumn.ToString(),
-            date_from = query.DateFrom?.ToString("yyyy-MM-dd HH:mm:ss"),
-            date_to = query.DateTo?.ToString("yyyy-MM-dd HH:mm:ss"),
-            app_id = query.AppId,
-            event_name = query.EventName,
-            os_name = query.OsName,
-            app_version = query.AppVersion,
-            country_code = query.CountryCode,
-            device_model = query.DeviceModel,
-        }, cancellationToken);
+        var granularityStr = granularity.ToString();
+        var valueColumnStr = valueColumn.ToString();
+        var cacheKey = BuildStatsCacheKey($"top-n:{nameColumn}:{valueColumnStr}", query, granularityStr);
+
+        var rows = await GetOrCreateCachedAsync(cacheKey, async () =>
+        {
+            var result = await _queryClient.NamedQueryAsync<TopNItem>("top_n__v2", new {
+                name_column = nameColumn,
+                granularity = granularityStr,
+                value_column = valueColumnStr,
+                date_from = query.DateFrom?.ToString("yyyy-MM-dd HH:mm:ss"),
+                date_to = query.DateTo?.ToString("yyyy-MM-dd HH:mm:ss"),
+                app_id = query.AppId,
+                event_name = query.EventName,
+                os_name = query.OsName,
+                app_version = query.AppVersion,
+                country_code = query.CountryCode,
+                device_model = query.DeviceModel,
+            }, cancellationToken);
+            return result.ToList();
+        });
 
         return Ok(rows);
+    }
+
+    private static string BuildStatsCacheKey(string endpoint, QueryArgs query, string granularity) =>
+        $"stats:{endpoint}:{query.AppId}:{query.DateFrom?.ToString("yyyyMMddHHmmss")}:{query.DateTo?.ToString("yyyyMMddHHmmss")}:{granularity}:{query.EventName}:{query.OsName}:{query.AppVersion}:{query.CountryCode}:{query.DeviceModel}";
+
+    private async Task<T> GetOrCreateCachedAsync<T>(string cacheKey, Func<Task<T>> factory)
+    {
+        if (_cache.TryGetValue(cacheKey, out T? cached) && cached is not null)
+        {
+            return cached;
+        }
+
+        var value = await factory();
+        _cache.Set(cacheKey, value, StatsCacheTtl);
+        return value;
     }
 }

@@ -1,10 +1,6 @@
-import { useApps } from "@features/apps";
-import { useQuery } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
 import { Fragment, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { dateFilterValuesAtom } from "../../../atoms/date-atoms";
-import { topEventProps } from "../query";
+import { useTopEventPropsQuery } from "../useAnalyticsQueries";
 import { TopNChart } from "./TopNChart";
 import { TopNTitle } from "./TopNTitle";
 
@@ -15,14 +11,8 @@ type Props = {
 type AggregateValueName = "events" | "sum" | "median" | "min" | "max";
 
 export function TopEventProps(props: Props) {
-  const { buildMode } = useApps();
   const [searchParams] = useSearchParams();
-  const { startDateIso, endDateIso, granularity } = useAtomValue(dateFilterValuesAtom);
-
-  const countryCode = searchParams.get("countryCode") || "";
-  const appVersion = searchParams.get("appVersion") || "";
   const eventName = searchParams.get("eventName") || "";
-  const osName = searchParams.get("osName") || "";
 
   const [stringKeyIndex, setStringKeyIndex] = useState(0);
   const [selectedNumericKey, setSelectedNumericKey] = useState<[AggregateValueName, string | undefined]>([
@@ -35,33 +25,7 @@ export function TopEventProps(props: Props) {
     isError,
     data: rows,
     refetch,
-  } = useQuery({
-    queryKey: [
-      "top-event-props",
-      buildMode,
-      props.appId,
-      startDateIso,
-      endDateIso,
-      countryCode,
-      appVersion,
-      eventName,
-      osName,
-    ],
-    queryFn: () =>
-      topEventProps({
-        buildMode,
-        appId: props.appId,
-        startDate: startDateIso,
-        endDate: endDateIso,
-        granularity,
-        countryCode,
-        appVersion,
-        eventName,
-        osName,
-      }),
-    staleTime: 10000,
-    enabled: !!startDateIso && !!endDateIso && !!granularity,
-  });
+  } = useTopEventPropsQuery(props.appId, eventName);
 
   const stringKeys = [...new Set((rows || []).map((row) => row.stringKey).filter((x) => !!x))];
 
