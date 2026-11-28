@@ -41,7 +41,7 @@ export function useTopEventPropsQuery(appId: string, eventName = "") {
         granularity,
         countryCode,
         appVersion,
-        eventName: eventName || undefined,
+        ...(eventName ? { eventName } : {}),
         osName,
       }),
     staleTime: ANALYTICS_STALE_TIME_MS,

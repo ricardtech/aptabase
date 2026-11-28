@@ -6,6 +6,18 @@ O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.
 
 ---
 
+## [v2.8.6] - 28/11/2026
+
+### 🛠️ Correções
+- **Restauração dos Dados nos Cards de Streaming & Esportes (`api.ts` / `useAnalyticsQueries.ts`)**:
+  - Corrigida a serialização de parâmetros `undefined` e `null` em `api.get()` (`src/webapp/fns/api.ts`), impedindo que `new URLSearchParams()` enviasse `eventName=undefined` na query de `/_stats/top-props` (o que fazia o ClickHouse filtrar `AND event_name = 'undefined'` e zerar `Top Filmes, Séries & TV` e `Top Campeonatos & Jogos ao Vivo`).
+  - Omitido o parâmetro `eventName` em `useTopEventPropsQuery` quando vazio.
+
+### 📊 Métricas de Código
+- **Total**: **27.399 linhas** de código em **358 arquivos-fonte** (`149` `.cs` · `171` `.tsx` · `35` `.ts` · `3` `.css`).
+
+---
+
 ## [v2.8.5] - 28/11/2026
 
 ### ⚡ Otimizações de Performance e Carregamento

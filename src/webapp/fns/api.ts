@@ -54,7 +54,15 @@ async function _fetch(method: string, path: string, body?: any): Promise<[number
 }
 
 async function get<T>(path: string, params?: Record<string, any>): Promise<T> {
-  const paramsStr = params ? new URLSearchParams(params).toString() : "";
+  const cleanParams: Record<string, string> = {};
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null) {
+        cleanParams[k] = String(v);
+      }
+    }
+  }
+  const paramsStr = Object.keys(cleanParams).length > 0 ? new URLSearchParams(cleanParams).toString() : "";
   const pathWithParams = paramsStr ? `${path}?${paramsStr}` : path;
 
   const [status, response] = await _fetch("GET", pathWithParams);
